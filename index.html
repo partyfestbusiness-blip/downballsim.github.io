@@ -294,17 +294,18 @@ async function connectRoom(create){
   const lib=await import('https://esm.run/trystero');
   selfId=lib.selfId;
   room=lib.joinRoom(appConfig,code);
-  sendInput=room.makeAction('downball-input');
-  sendState=room.makeAction('downball-state');
-  sendProfile=room.makeAction('downball-profile');
-  sendStart=room.makeAction('downball-start');
-  sendInput.onMessage=(data,{peerId})=>{if(onlineHost)onlineInputs[peerId]=data};
-  sendProfile.onMessage=(data,{peerId})=>{profileByPeer[peerId]=data;if(onlineHost)broadcastState(true)};
-  sendStart.onMessage=(data,{peerId})=>{
+  const [sendInputAction, getInputAction] = room.makeAction('downball-input');
+  const [sendStateAction, getStateAction] = room.makeAction('downball-state');
+  const [sendProfileAction, getProfileAction] = room.makeAction('downball-profile');
+  const [sendStartAction, getStartAction] = room.makeAction('downball-start');
+  sendInput=sendInputAction;sendState=sendStateAction;sendProfile=sendProfileAction;sendStart=sendStartAction;
+  getInputAction((data, peerId)=>{if(onlineHost)onlineInputs[peerId]=data});
+  getProfileAction((data, peerId)=>{profileByPeer[peerId]=data;if(onlineHost)broadcastState(true)});
+  getStartAction((data, peerId)=>{
    if(data.type==='start'&&!onlineHost){mode=data.mode;$('mode').value=mode;beginMatch(data.total)}
    if(data.type==='next'&&!onlineHost){round=data.round;resetBall();running=true;show(null);loop()}
-  };
-  sendState.onMessage=(data,{peerId})=>{
+  });
+  getStateAction((data, peerId)=>{
    if(onlineHost||!data||data.type!=='state')return;
    if(data.mode&&$('mode').value!==data.mode){$('mode').value=data.mode;mode=data.mode;$('mode').onchange()}
    mode=data.mode;round=data.round;total=data.total;scores=data.scores||scores;teamScores=data.teamScores||teamScores;
@@ -325,7 +326,7 @@ async function connectRoom(create){
      show('over');
     }else if(roundWinner!==null){$('roundTitle').textContent=`ROUND ${round}/${total} COMPLETE`;$('roundMsg').textContent=winnerLabel(roundWinner)+' wins the round!';$('roundScore').textContent=scoreText();$('next').textContent=round===total?'Final results':'Next round';show('roundScreen')}
    }
-  };
+  });
   room.onPeerJoin=peerId=>{
    if(!peerOrder.includes(peerId))peerOrder.push(peerId);
    if(sendProfile)sendProfile({sprint:profile.sprint,movement:profile.movement});
