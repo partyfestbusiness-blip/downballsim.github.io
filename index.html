@@ -18,7 +18,16 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
 
 <div id="start" class="screen"><div class="panel">
 <h1>🏐 DOWNBALL SIMULATOR</h1>
-<p>Fast rallies, sprint energy, and online room codes.</p>
+<p>Fast rallies, sprint energy, online rooms, and player accounts.</p>
+<div class="card" style="text-align:left;margin:12px 0">
+ <strong>👤 Downball account</strong>
+ <p class="small">Sign in to sync your coins and upgrades across devices. Accounts need the free Supabase setup described in README.txt.</p>
+ <label for="accountName">Player name</label><input id="accountName" type="text" maxlength="20" placeholder="Your player name" autocomplete="nickname">
+ <label for="accountEmail">Email</label><input id="accountEmail" type="email" placeholder="you@example.com" autocomplete="email">
+ <label for="accountPassword">Password</label><input id="accountPassword" type="password" minlength="8" placeholder="At least 8 characters" autocomplete="current-password">
+ <div class="row"><button id="accountCreate">Create account</button><button id="accountLogin">Sign in</button><button id="accountLogout" class="hidden">Sign out</button></div>
+ <p id="accountStatus" class="small status">Accounts are not configured yet. See README.txt.</p>
+</div>
 <label for="mode">Game mode</label>
 <select id="mode">
 <option value="bot">Solo 1v1 vs Bot</option>
@@ -61,11 +70,46 @@ const EDGE_NAMES=['TOP','BOTTOM','LEFT','RIGHT'];
 const DEFAULT_PROFILE={coins:0,sprint:0,movement:0};
 let profile=loadProfile(), mode='bot', running=false,paused=false,raf=0,keys={},round=1,total=3,scores=[0,0,0,0],teamScores=[0,0],roundStart=0,graceUntil=0,speedMult=1,lastFrame=0;
 let players=[],ball={x:W/2,y:H/2,r:11,vx:3.3,vy:6.4},roundWinner=null,matchRewarded=false,matchOver=false;
-let room=null,sendInput=null,sendState=null,sendProfile=null,sendStart=null,onlineHost=false,onlineConnected=false,peerOrder=[],peerSlots={},selfId='',onlineInputs={},lastBroadcast=0,assignedSlot=0,onlineStarted=false,profileByPeer={};
+let room=null,sendInput=null,sendState=null,sendProfile=null,sendStart=null,sendPresence=null,onlineHost=false,onlineConnected=false,peerOrder=[],peerSlots={},selfId='',onlineInputs={},lastBroadcast=0,assignedSlot=0,onlineStarted=false,profileByPeer={},hostPeerId='',hostSeen=false,joinTimeout=null,lobbyBroadcastTimer=null,roomCodeActive='';
+const SUPABASE_URL='PASTE_SUPABASE_PROJECT_URL_HERE';
+const SUPABASE_ANON_KEY='PASTE_SUPABASE_PUBLISHABLE_OR_ANON_KEY_HERE';
+let supabase=null,authUser=null,accountProfileReady=false,accountSyncTimer=null;
 const appConfig={appId:'downball-simulator-online-2026'};
 const screens=['start','pause','roundScreen','over'];
 function loadProfile(){try{return {...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem('downballProfile')||'{}')}}catch{return {...DEFAULT_PROFILE}}}
-function saveProfile(){localStorage.setItem('downballProfile',JSON.stringify(profile));refreshShop()}
+function saveProfile(){localStorage.setItem(authUser?`downballProfile_${authUser.id}`:'downballProfile',JSON.stringify(profile));refreshShop();if(authUser&&accountProfileReady){clearTimeout(accountSyncTimer);accountSyncTimer=setTimeout(syncAccountProfile,500)}}
+async function getSupabase(){
+ if(SUPABASE_URL.startsWith('PASTE_')||SUPABASE_ANON_KEY.startsWith('PASTE_'))return null;
+ if(!supabase){const lib=await import('https://esm.sh/@supabase/supabase-js@2');supabase=lib.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)}
+ return supabase;
+}
+function accountStatus(msg){$('accountStatus').textContent=msg}
+async function syncAccountProfile(){
+ if(!authUser||!accountProfileReady)return;
+ try{const client=await getSupabase();if(!client)return;const row={user_id:authUser.id,username:($('accountName').value.trim()||authUser.user_metadata?.username||authUser.email?.split('@')[0]||'Player').slice(0,20),coins:Math.max(0,Math.floor(profile.coins)),sprint:Math.max(0,Math.min(5,Math.floor(profile.sprint))),movement:Math.max(0,Math.min(5,Math.floor(profile.movement))),updated_at:new Date().toISOString()};const {error}=await client.from('profiles').upsert(row,{onConflict:'user_id'});if(error)throw error;accountStatus('Signed in as '+(row.username||authUser.email)+' · profile synced')}
+ catch(err){accountStatus('Signed in, but cloud save failed. Check the profiles table setup in README.txt. '+(err?.message||''))}
+}
+async function applyAccountUser(user){
+ authUser=user||null;accountProfileReady=false;$('accountCreate').classList.toggle('hidden',!!user);$('accountLogin').classList.toggle('hidden',!!user);$('accountLogout').classList.toggle('hidden',!user);
+ if(!user){accountStatus(SUPABASE_URL.startsWith('PASTE_')?'Accounts need setup. See README.txt.':'Signed out.');return}
+ $('accountEmail').value=user.email||'';$('accountPassword').value='';if(!$('accountName').value)$('accountName').value=user.user_metadata?.username||user.email?.split('@')[0]||'Player';
+ try{const client=await getSupabase();const {data,error}=await client.from('profiles').select('username,coins,sprint,movement').eq('user_id',user.id).maybeSingle();if(error)throw error;
+  if(data){profile={...DEFAULT_PROFILE,coins:+data.coins||0,sprint:Math.max(0,Math.min(5,+data.sprint||0)),movement:Math.max(0,Math.min(5,+data.movement||0))};$('accountName').value=data.username||$('accountName').value}
+  else profile={...DEFAULT_PROFILE};
+  accountProfileReady=true;saveProfile();await syncAccountProfile();accountStatus('Signed in as '+$('accountName').value+'. Cloud profile ready.');
+ }catch(err){accountStatus('Signed in, but cloud profile is not ready. Check the database setup in README.txt. '+(err?.message||''))}
+}
+async function accountCreate(){
+ const email=$('accountEmail').value.trim(),password=$('accountPassword').value,username=$('accountName').value.trim().slice(0,20)||'Player';if(!email||password.length<8){accountStatus('Enter an email and a password of at least 8 characters.');return}
+ try{const client=await getSupabase();if(!client){accountStatus('Accounts are not configured yet. Follow README.txt to add your Supabase project URL and public key.');return}const {data,error}=await client.auth.signUp({email,password,options:{data:{username}}});if(error)throw error;if(data.user&&!data.session)accountStatus('Account created! Check your email to confirm it, then sign in.');else if(data.user)await applyAccountUser(data.user)}catch(err){accountStatus(err?.message||'Could not create account.')}
+}
+async function accountLogin(){
+ const email=$('accountEmail').value.trim(),password=$('accountPassword').value;if(!email||!password){accountStatus('Enter your email and password.');return}
+ try{const client=await getSupabase();if(!client){accountStatus('Accounts are not configured yet. Follow README.txt to add your Supabase project URL and public key.');return}const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;await applyAccountUser(data.user)}catch(err){accountStatus(err?.message||'Could not sign in.')}
+}
+async function accountLogout(){try{const client=await getSupabase();if(client)await client.auth.signOut()}catch{}authUser=null;accountProfileReady=false;profile={...DEFAULT_PROFILE};saveProfile();$('accountCreate').classList.remove('hidden');$('accountLogin').classList.remove('hidden');$('accountLogout').classList.add('hidden');accountStatus('Signed out.')}
+$('accountCreate').onclick=accountCreate;$('accountLogin').onclick=accountLogin;$('accountLogout').onclick=accountLogout;$('accountName').addEventListener('change',()=>{if(authUser&&accountProfileReady)syncAccountProfile()});
+async function initAccounts(){try{const client=await getSupabase();if(!client){accountStatus('Accounts need setup. Open README.txt and add your Supabase project URL and public key.');return}const {data:{session}}=await client.auth.getSession();if(session?.user)await applyAccountUser(session.user);client.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>applyAccountUser(session?.user||null),0)});accountStatus(session?.user?'Account loaded.':'Create an account or sign in.')}catch(err){accountStatus('Account setup error: '+(err?.message||err))}}
 function refreshShop(){
  $('coinCount').textContent=profile.coins;$('sprintLv').textContent=profile.sprint;$('moveLv').textContent=profile.movement;
  $('buySprint').textContent=profile.sprint>=5?'MAX LEVEL':`Upgrade · ${30+profile.sprint*25} coins`;
@@ -276,75 +320,88 @@ $('onlineStart').onclick=startGame;
 
 function broadcastState(force){
  if(!onlineHost||!sendState||!room)return;
- sendState({type:'state',mode,round,total,scores,teamScores,ball,players:players.map(p=>({id:p.id,x:p.x,y:p.y,energy:p.energy,color:p.color,name:p.name,owner:p.owner})),running,paused,speedMult,grace:Math.max(0,graceUntil-performance.now()),hostTime:performance.now(),force:!!force,roundWinner,matchOver});
+ sendState({type:'state',protocol:2,mode,roomCode:roomCodeActive,round,total,scores,teamScores,ball,players:players.map(p=>({...p})),roster:Math.min(modePlayers(),peerOrder.length+1),running,paused,speedMult,grace:Math.max(0,graceUntil-performance.now()),hostTime:performance.now(),force:!!force,roundWinner,matchOver});
 }
 function setNetworkStatus(text){$('netStatus').textContent=text}
-function updateLobby(){
- const needed=modePlayers(),n=Math.min(needed,peerOrder.length+1);
- $('lobbyInfo').textContent=`Players connected: ${n}/${needed}. ${onlineHost?'You are the host.':'Waiting for the host.'}`;
+function updateLobby(rosterFromHost=null){
+ const needed=modePlayers(),n=Math.min(needed,rosterFromHost==null?peerOrder.length+1:rosterFromHost);
+ $('lobbyInfo').textContent=`Players connected: ${n}/${needed}. ${onlineHost?'You are the host.':(onlineConnected?'Connected to host.':'Waiting for the host.')}`;
  $('onlineStart').disabled=!onlineHost||n<needed;
 }
+function clearRoomTimers(){if(joinTimeout){clearTimeout(joinTimeout);joinTimeout=null}if(lobbyBroadcastTimer){clearInterval(lobbyBroadcastTimer);lobbyBroadcastTimer=null}}
+function leaveCurrentRoom(){clearRoomTimers();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={}}
 async function connectRoom(create){
  const code=$('roomCode').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,24);
  if(!code){setNetworkStatus('Enter a room code first.');return}
- if(room){try{room.leave()}catch{}room=null}
- stop();running=false;onlineHost=create;onlineConnected=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={};onlineStarted=false;
- mode=$('mode').value;selfId='';
+ leaveCurrentRoom();stop();running=false;onlineHost=create;onlineConnected=false;mode=$('mode').value;selfId='';roomCodeActive=code;
  try{
-  const lib=await import('https://esm.run/trystero');
+  const lib=await import('https://esm.sh/trystero@0.26.0');
   selfId=lib.selfId;
-  room=lib.joinRoom(appConfig,code);
-  const inputAction=room.makeAction('downball-input');
-  const stateAction=room.makeAction('downball-state');
-  const profileAction=room.makeAction('downball-profile');
-  const startAction=room.makeAction('downball-start');
-  sendInput=data=>inputAction.send(data);
-  sendState=data=>stateAction.send(data);
-  sendProfile=data=>profileAction.send(data);
-  sendStart=data=>startAction.send(data);
-  inputAction.onMessage=(data, meta={})=>{if(onlineHost)onlineInputs[meta.peerId]=data};
-  profileAction.onMessage=(data, meta={})=>{if(meta.peerId)profileByPeer[meta.peerId]=data;if(onlineHost)broadcastState(true)};
-  startAction.onMessage=(data, meta={})=>{
-   if(data?.type==='start'&&!onlineHost){mode=data.mode;$('mode').value=mode;beginMatch(data.total)}
-   if(data?.type==='next'&&!onlineHost){round=data.round;resetBall();running=true;show(null);loop()}
+  room=lib.joinRoom({appId:'downball-simulator-online-v3'},code,{onJoinError:({error})=>setNetworkStatus('Connection problem: '+(error?.message||error))});
+  const inputAction=room.makeAction('downball-input-v3');
+  const stateAction=room.makeAction('downball-state-v3');
+  const profileAction=room.makeAction('downball-profile-v3');
+  const startAction=room.makeAction('downball-start-v3');
+  const presenceAction=room.makeAction('downball-presence-v3');
+  sendInput=data=>inputAction.send(data);sendState=data=>stateAction.send(data);sendProfile=data=>profileAction.send(data);sendStart=data=>startAction.send(data);sendPresence=(data,options)=>presenceAction.send(data,options);
+  inputAction.onMessage=(data,{peerId}={})=>{if(onlineHost&&peerOrder.includes(peerId)&&data&&typeof data==='object')onlineInputs[peerId]=data};
+  profileAction.onMessage=(data,{peerId}={})=>{if(peerId&&peerOrder.includes(peerId)&&data&&typeof data==='object'){profileByPeer[peerId]={sprint:Math.max(0,Math.min(5,+data.sprint||0)),movement:Math.max(0,Math.min(5,+data.movement||0))};if(onlineHost){assignOnlineSlots();broadcastState(true)}}};
+  presenceAction.onMessage=(data,{peerId}={})=>{
+   if(!data||!peerId)return;
+   if(data.type==='hello'&&onlineHost){
+    if(!peerOrder.includes(peerId))peerOrder.push(peerId);
+    presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});
+    assignOnlineSlots();updateLobby();broadcastState(true);return;
+   }
+   if(data.type==='host'&&!onlineHost){
+    if(data.protocol!==3||data.roomCode!==roomCodeActive)return;
+    if(hostPeerId&&hostPeerId!==peerId)return;
+    hostPeerId=peerId;hostSeen=true;onlineConnected=true;
+    mode=data.mode;$('mode').value=mode;$('mode').onchange();
+    setNetworkStatus('Connected to host. Waiting for players…');
+    sendProfile({sprint:profile.sprint,movement:profile.movement});updateLobby();return;
+   }
+   if(data.type==='host'&&onlineHost&&peerId!==selfId&&selfId.localeCompare(peerId)>0){
+    setNetworkStatus('That room already has a host. Choose another room code or join it.');
+    leaveCurrentRoom();onlineHost=false;updateLobby();return;
+   }
   };
-  stateAction.onMessage=(data, meta={})=>{
-   if(onlineHost||!data||data.type!=='state')return;
-   if(data.mode&&$('mode').value!==data.mode){$('mode').value=data.mode;mode=data.mode;$('mode').onchange()}
-   mode=data.mode;round=data.round;total=data.total;scores=data.scores||scores;teamScores=data.teamScores||teamScores;
+  startAction.onMessage=(data,{peerId}={})=>{
+   if(onlineHost||peerId!==hostPeerId||!data)return;
+   if(data.type==='start'){mode=data.mode;$('mode').value=mode;$('mode').onchange();beginMatch(data.total)}
+   if(data.type==='next'){round=data.round;resetBall();running=true;show(null);loop()}
+  };
+  stateAction.onMessage=(data,{peerId}={})=>{
+   if(onlineHost||peerId!==hostPeerId||!data||data.type!=='state'||data.protocol!==2)return;
+   onlineConnected=true;mode=data.mode;round=data.round;total=data.total;scores=data.scores||scores;teamScores=data.teamScores||teamScores;
    ball=data.ball||ball;speedMult=data.speedMult||1;
-   if(data.players){
-    players=data.players.map(p=>({...p,edge:p.id,w:p.id<2?132:16,h:p.id<2?16:132,upgrade:profileByPeer[p.owner]||{sprint:0,movement:0}}));
-    assignedSlot=Math.max(0,players.findIndex(p=>p.owner===selfId));
-   }
-   running=data.running;paused=data.paused;graceUntil=performance.now()+(data.grace||0);roundWinner=data.roundWinner;matchOver=!!data.matchOver;
-   if(running){if($('start').classList.contains('hidden')===false)show(null);if(!raf)loop()}
-   else{
-    stop();draw();
-    if(matchOver){
-     const won=teamMode()?((assignedSlot===0||assignedSlot===2)?teamScores[0]>teamScores[1]:teamScores[1]>teamScores[0]):mode==='online4'?scores[assignedSlot]===Math.max(...scores):scores[0]>scores[1];
-     $('winner').textContent=won?'🏆 MATCH COMPLETE — YOU WON!':'🏁 MATCH COMPLETE';
-     $('finalScore').textContent=teamMode()?`Team Blue ${teamScores[0]} — ${teamScores[1]} Team Red`:scores.slice(0,modePlayers()).map((v,i)=>`P${i+1}: ${v}`).join(' · ');
-     if(!matchRewarded){const earned=20+(won?10:0);profile.coins+=earned;saveProfile();$('rewardMsg').textContent=`+${earned} coins ${won?'(includes win bonus)':'for finishing the match'}`;matchRewarded=true}
-     show('over');
-    }else if(roundWinner!==null){$('roundTitle').textContent=`ROUND ${round}/${total} COMPLETE`;$('roundMsg').textContent=winnerLabel(roundWinner)+' wins the round!';$('roundScore').textContent=scoreText();$('next').textContent=round===total?'Final results':'Next round';show('roundScreen')}
-   }
+   if(data.players){players=data.players.map((p,i)=>({...p,edge:p.edge??i,w:p.w??(i<2?132:16),h:p.h??(i<2?16:132),upgrade:profileByPeer[p.owner]||p.upgrade||{sprint:0,movement:0}}));assignedSlot=Math.max(0,players.findIndex(p=>p.owner===selfId));if(players[assignedSlot])players[assignedSlot].name='YOU'}
+   updateLobby(data.roster||1);running=!!data.running;paused=!!data.paused;graceUntil=performance.now()+(data.grace||0);roundWinner=data.roundWinner;matchOver=!!data.matchOver;
+   if(running){if(!$('start').classList.contains('hidden'))show(null);if(!raf)loop()}
+   else{stop();draw();if(matchOver){const won=teamMode()?((assignedSlot===0||assignedSlot===2)?teamScores[0]>teamScores[1]:teamScores[1]>teamScores[0]):mode==='online4'?scores[assignedSlot]===Math.max(...scores):scores[0]>scores[1];$('winner').textContent=won?'🏆 MATCH COMPLETE — YOU WON!':'🏁 MATCH COMPLETE';$('finalScore').textContent=teamMode()?`Team Blue ${teamScores[0]} — ${teamScores[1]} Team Red`:scores.slice(0,modePlayers()).map((v,i)=>`P${i+1}: ${v}`).join(' · ');if(!matchRewarded){const earned=20+(won?10:0);profile.coins+=earned;saveProfile();$('rewardMsg').textContent=`+${earned} coins ${won?'(includes win bonus)':'for finishing the match'}`;matchRewarded=true}show('over')}
+    else if(roundWinner!==null){$('roundTitle').textContent=`ROUND ${round}/${total} COMPLETE`;$('roundMsg').textContent=winnerLabel(roundWinner)+' wins the round!';$('roundScore').textContent=scoreText();$('next').textContent=round===total?'Final results':'Next round';show('roundScreen')}}
   };
   room.onPeerJoin=peerId=>{
    if(!peerOrder.includes(peerId))peerOrder.push(peerId);
-   if(sendProfile)sendProfile({sprint:profile.sprint,movement:profile.movement});
-   onlineConnected=true;setNetworkStatus('Connected to room '+code);if(onlineHost){assignOnlineSlots();broadcastState(true)}updateLobby();
+   if(onlineHost){presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});assignOnlineSlots();updateLobby();broadcastState(true)}
+   else presenceAction.send({type:'hello',protocol:3,roomCode:roomCodeActive},{target:peerId});
   };
-  room.onPeerLeave=peerId=>{peerOrder=peerOrder.filter(x=>x!==peerId);delete onlineInputs[peerId];onlineConnected=!!room;updateLobby();setNetworkStatus('A player left. Room may need to be recreated.')};
-  onlineConnected=true;
-  sendProfile({sprint:profile.sprint,movement:profile.movement});
-  setNetworkStatus(create?'Room created. Share code: '+code:'Joined room '+code+'. Waiting for host.');
-  if(create){selfId=lib.selfId;createPlayers();assignOnlineSlots()}
+  room.onPeerLeave=peerId=>{
+   peerOrder=peerOrder.filter(x=>x!==peerId);delete onlineInputs[peerId];delete profileByPeer[peerId];
+   if(!onlineHost&&peerId===hostPeerId){leaveCurrentRoom();running=false;stop();setNetworkStatus('The host left the room. Join a new room to play.');updateLobby();return}
+   if(onlineHost){assignOnlineSlots();broadcastState(true)}updateLobby();setNetworkStatus('A player left the room.');
+  };
+  if(create){onlineConnected=true;hostSeen=true;createPlayers();assignOnlineSlots();setNetworkStatus('Room created. Share code: '+code+'. Waiting for players…');lobbyBroadcastTimer=setInterval(()=>{if(room&&onlineHost)broadcastState(true)},500);}
+  else{
+   setNetworkStatus('Looking for the host for room '+code+'…');
+   // A room ID alone does not prove a room exists. Require a live host handshake.
+   joinTimeout=setTimeout(()=>{if(room&&!hostSeen){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Room not found: no host responded. Check the code and ask the host to create the room first.');updateLobby()}},10000);
+  }
   updateLobby();$('onlineStart').disabled=!onlineHost;
- }catch(err){setNetworkStatus('Could not connect: '+(err?.message||err)+' — open this page from a website and try again.');onlineConnected=false}
+ }catch(err){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Could not connect: '+(err?.message||err));updateLobby()}
 }
 $('createRoom').onclick=()=>connectRoom(true);$('joinRoom').onclick=()=>connectRoom(false);
-$('leaveRoom').onclick=()=>{if(room){room.leave();room=null}onlineConnected=false;onlineHost=false;onlineStarted=false;running=false;stop();peerOrder=[];updateLobby();setNetworkStatus('Left the room.')};
+$('leaveRoom').onclick=()=>{leaveCurrentRoom();onlineHost=false;running=false;stop();updateLobby();setNetworkStatus('Left the room.')};
 
 function startOnlineFromHost(){
  if(!onlineHost)return;
@@ -356,6 +413,6 @@ const originalNext=nextRound;
 $('next').onclick=()=>{if(isOnline()&&!onlineHost){setNetworkStatus('Only the host can advance the round.');return}originalNext()};
 const originalFinish=finishMatch;
 function syncProfileToPeers(){if(sendProfile)sendProfile({sprint:profile.sprint,movement:profile.movement})}
-refreshShop();createPlayers();resetBall();draw();
+refreshShop();createPlayers();resetBall();draw();initAccounts();
 </script>
 </body></html>
