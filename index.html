@@ -8,8 +8,8 @@
 :root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#d9f1ff;color:#18344b;font:16px system-ui,Arial;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px}
 h1,h2,p{margin:8px 0}h1{font-size:clamp(22px,4vw,34px)}canvas{display:block;width:min(900px,98vw);height:auto;border:4px solid #203b53;border-radius:14px;background:#eff9ff;box-shadow:0 8px 24px #173b5522}
 #hud{width:min(900px,98vw);display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;font-weight:700}
-.screen{position:fixed;inset:0;background:#0d2238ed;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;overflow:auto;z-index:5}.hidden{display:none!important}.panel{width:min(640px,98vw);padding:22px;border:1px solid #ffffff40;border-radius:18px;background:#ffffff12;box-shadow:0 16px 60px #0003}
-button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:4px}button{background:#ffca28;color:#152b3e;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text]{width:100%}input[type=range]{width:100%}.small{font-size:13px;line-height:1.5;opacity:.9}.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.status{color:#ffe082;min-height:20px}.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:12px 0}.card{border:1px solid #ffffff38;border-radius:12px;padding:12px;background:#ffffff0d}.card strong{display:block;font-size:17px}.coins{color:#ffdf58;font-weight:900}.note{color:#cfe9ff}#matchTools{width:min(900px,98vw);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}#matchTools button,#matchTools label{background:#173b55;color:white;border:1px solid #9fc4dc;border-radius:9px;padding:9px 12px;font-weight:700}#roomList{display:grid;gap:6px;max-height:180px;overflow:auto;text-align:left}.roomItem{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#ffffff12;border:1px solid #ffffff35;border-radius:9px;padding:8px}.roomItem button{margin:0}.toggleline{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}.toggleline input{width:auto}.bindGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin-top:8px}.bindRow{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#ffffff10;border-radius:8px;padding:5px 8px}.bindRow button{padding:6px 8px;margin:0}.bindRow span{font-size:13px}
+.screen{position:fixed;inset:0;background:#0d2238ed;color:#fff;display:flex;align-items:flex-start;justify-content:center;text-align:center;padding:14px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;z-index:5}.screen .panel{margin:auto;flex-shrink:0;max-height:none}.hidden{display:none!important}.panel{width:min(640px,98vw);padding:22px;border:1px solid #ffffff40;border-radius:18px;background:#ffffff12;box-shadow:0 16px 60px #0003}
+button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:4px}button{background:#ffca28;color:#152b3e;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text]{width:100%}input[type=range]{width:100%}.small{font-size:13px;line-height:1.5;opacity:.9}.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.status{color:#ffe082;min-height:20px}.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:12px 0}.card{border:1px solid #ffffff38;border-radius:12px;padding:12px;background:#ffffff0d}.card strong{display:block;font-size:17px}.coins{color:#ffdf58;font-weight:900}.note{color:#cfe9ff}#matchTools{width:min(900px,98vw);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}#matchTools button,#matchTools label{background:#173b55;color:white;border:1px solid #9fc4dc;border-radius:9px;padding:9px 12px;font-weight:700}#roomList{display:grid;gap:6px;max-height:180px;overflow:auto;text-align:left}.roomItem{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#ffffff12;border:1px solid #ffffff35;border-radius:9px;padding:8px}.roomItem button{margin:0}.toggleline{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}.toggleline input{width:auto}.bindGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin-top:8px}.bindRow{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#ffffff10;border-radius:8px;padding:5px 8px}.bindRow button{padding:6px 8px;margin:0}.bindRow span{font-size:13px}#controlsHint{color:#cfe9ff;margin:6px 0}#fireballOverlay{position:fixed;left:12px;top:50%;transform:translateY(-50%);z-index:3;pointer-events:none;display:none;color:#18344b;font-weight:900;text-align:center;width:76px}#fireballOverlay .meter{height:190px;width:20px;border:3px solid #18344b;border-radius:12px;margin:8px auto;background:#ffffffaa;overflow:hidden;display:flex;align-items:flex-end}#fireballFill{width:100%;height:100%;background:linear-gradient(#ffef78,#ff6b1a);transition:height .12s}#fireballOverlay .meterLabel{font-size:11px;line-height:1.2;background:#ffffffcf;border-radius:6px;padding:4px}#fireballFlash{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:4;pointer-events:none;color:#ff3328;font-size:clamp(54px,12vw,132px);font-weight:1000;font-style:italic;text-shadow:0 4px 0 #fff,0 0 28px #ff6b1a;transform:rotate(-7deg);-webkit-text-stroke:2px #7d0800}
 </style>
 </head>
 <body>
@@ -18,6 +18,7 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
 <div id="matchTools">
  <span id="abilityStatus" class="small">Fireball and ball-speed settings are locked for this match.</span>
 </div>
+<div id="fireballOverlay" aria-live="polite"><div class="meterLabel">FIREBALL<br>CHARGE</div><div class="meter"><div id="fireballFill"></div></div><div id="fireballMeterText" class="meterLabel">READY</div></div><div id="fireballFlash">Fireball!</div>
 
 <div id="start" class="screen"><div class="panel">
 <h1>🏐 DOWNBALL SIMULATOR</h1>
@@ -47,8 +48,8 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
  <div class="toggleline"><label for="menuSpeedToggle">⚡ Gradually increase ball speed (max 2×)</label><input id="menuSpeedToggle" type="checkbox" checked></div>
  <p class="small" id="settingsLockNote">Settings can be changed here before the match starts.</p>
 </div>
-<div class="card" style="text-align:left;margin:10px 0"><strong>🎮 Controls & keybinds</strong><div class="small" id="controls">Move: ← / → · Sprint: Shift · Fireball: F</div>
- <div class="bindGrid" id="bindGrid"></div><p class="small" id="bindStatus">Select Change next to a control, then press the key you want.</p>
+<p class="small" id="controlsHint">Press K to open Controls & keybinds.</p><div class="card hidden" id="controlsGui" style="text-align:left;margin:10px 0"><strong>🎮 Controls & keybinds</strong><div class="small" id="controls">Move: ← / → · Sprint: Shift · Fireball: F</div>
+ <div class="bindGrid" id="bindGrid"></div><p class="small" id="bindStatus">Select Change next to a control, then press the key you want. Press your Controls key again to close.</p>
  <div class="small">Online side courts use Up/Down for movement. Esc pauses solo/local matches. Keybinds are saved in this browser.</div></div>
 <div id="upgrades">
 <div class="cardgrid">
@@ -87,14 +88,17 @@ let room=null,sendInput=null,sendState=null,sendProfile=null,sendStart=null,send
 const SUPABASE_URL='https://pyfabzapzjtzayosvdzb.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_V5NEsQTyMwabVGh3vF8BpQ_mpmQ53tD';
 let supabase=null,authUser=null,accountProfileReady=false,accountSyncTimer=null;
-let fireballEnabled=localStorage.getItem('downballFireballEnabled')!=='false',fireballChargeStart=0,fireballUntil=0,speedIncreaseEnabled=localStorage.getItem('downballSpeedIncreaseEnabled')!=='false',lastFireballUi=0,settingsLocked=false,capturingBind=null;
+let fireballEnabled=localStorage.getItem('downballFireballEnabled')!=='false',fireballUntil=0,fireballCooldownUntil=0,fireballFlashUntil=0,speedIncreaseEnabled=localStorage.getItem('downballSpeedIncreaseEnabled')!=='false',lastFireballUi=0,settingsLocked=false,capturingBind=null;
 const appConfig={appId:'downball-simulator-online-2026'};
-const DEFAULT_BINDS={left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',sprint:'Shift',fireball:'f',p2left:'a',p2right:'d',p2sprint:' '};
+const DEFAULT_BINDS={left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',sprint:'Shift',fireball:'f',controls:'k',p2left:'a',p2right:'d',p2sprint:' '};
 let keybinds=loadKeybinds();
 function loadKeybinds(){try{return {...DEFAULT_BINDS,...JSON.parse(localStorage.getItem('downballKeybinds')||'{}')}}catch{return {...DEFAULT_BINDS}}}
 function keyToken(key){return key===' '?'Space':key==='Escape'?'Esc':key.startsWith('Arrow')?key.replace('Arrow','') : key.length===1?key.toUpperCase():key}
+function sameKey(a,b){return String(a).length===1&&String(b).length===1?String(a).toLowerCase()===String(b).toLowerCase():a===b}
+function controlsGuiOpen(){return !$('controlsGui').classList.contains('hidden')}
+function toggleControlsGui(){if(!$('start').classList.contains('hidden')&&!isOnline()||!$('start').classList.contains('hidden')&&isOnline()){ $('controlsGui').classList.toggle('hidden');$('controlsHint').textContent=controlsGuiOpen()?'Press '+keyToken(keybinds.controls)+' again to close Controls & keybinds.':'Press '+keyToken(keybinds.controls)+' to open Controls & keybinds.'; }}
 function heldAction(action){const k=keybinds[action];return !!keys[k]||!!keys[String(k).toLowerCase()]||!!keys[String(k).toUpperCase()]}
-function renderKeybinds(){const names={left:'Move left',right:'Move right',up:'Move up (online)',down:'Move down (online)',sprint:'Sprint',fireball:'Fireball',p2left:'Player 2 left',p2right:'Player 2 right',p2sprint:'Player 2 sprint'};const grid=$('bindGrid');if(!grid)return;grid.replaceChildren();for(const [action,label] of Object.entries(names)){const row=document.createElement('div');row.className='bindRow';const span=document.createElement('span');span.textContent=label+': '+keyToken(keybinds[action]);const btn=document.createElement('button');btn.textContent=capturingBind===action?'Press a key…':'Change';btn.onclick=()=>{capturingBind=action;$('bindStatus').textContent='Press any key for '+label+'. Press Escape to cancel.';renderKeybinds()};row.append(span,btn);grid.append(row)}}
+function renderKeybinds(){const names={left:'Move left',right:'Move right',up:'Move up (online)',down:'Move down (online)',sprint:'Sprint',fireball:'Fireball',controls:'Open/close controls GUI',p2left:'Player 2 left',p2right:'Player 2 right',p2sprint:'Player 2 sprint'};const grid=$('bindGrid');if(!grid)return;grid.replaceChildren();for(const [action,label] of Object.entries(names)){const row=document.createElement('div');row.className='bindRow';const span=document.createElement('span');span.textContent=label+': '+keyToken(keybinds[action]);const btn=document.createElement('button');btn.textContent=capturingBind===action?'Press a key…':'Change';btn.onclick=()=>{capturingBind=action;$('bindStatus').textContent='Press any key for '+label+'. Press Escape to cancel.';renderKeybinds()};row.append(span,btn);grid.append(row)}}
 function updateSettingsUI(){ $('menuFireballToggle').checked=fireballEnabled;$('menuSpeedToggle').checked=speedIncreaseEnabled;const canEdit=!settingsLocked&&(!isOnline()||onlineHost);$('menuFireballToggle').disabled=!canEdit;$('menuSpeedToggle').disabled=!canEdit;$('settingsLockNote').textContent=settingsLocked?'Locked for this match. Return to the menu and leave the online room to change settings for a new match.':isOnline()&&!onlineHost?'Only the room host can set these options before the match starts.':'Settings lock when the match starts.'; }
 function saveSettings(){localStorage.setItem('downballFireballEnabled',String(fireballEnabled));localStorage.setItem('downballSpeedIncreaseEnabled',String(speedIncreaseEnabled));updateSettingsUI()}
 
@@ -164,7 +168,7 @@ function createPlayers(){
 function resetBall(){
  ball={x:W/2,y:H/2,r:11,vx:(Math.random()<.5?-1:1)*3.6,vy:(Math.random()<.5?-1:1)*6.2};
  players.forEach(p=>{p.energy=100;positionPlayer(p)});
- roundStart=performance.now();graceUntil=roundStart+3000;speedMult=1;fireballUntil=0;fireballChargeStart=0;roundWinner=null;lastFrame=0;
+ roundStart=performance.now();graceUntil=roundStart+3000;speedMult=1;fireballUntil=0;fireballFlashUntil=0;roundWinner=null;lastFrame=0;
 }
 function positionPlayer(p){if(p.edge===0){p.w=132;p.h=16;p.x=W/2-p.w/2;p.y=28}else if(p.edge===1){p.w=132;p.h=16;p.x=W/2-p.w/2;p.y=H-44}else if(p.edge===2){p.w=16;p.h=132;p.x=28;p.y=H/2-p.h/2}else{p.w=16;p.h=132;p.x=W-44;p.y=H/2-p.h/2}}
 function stop(){if(raf)cancelAnimationFrame(raf);raf=0}
@@ -210,15 +214,16 @@ function finishMatch(){
  let won=false,scoreLine='';
  if(teamMode()){won=assignedSlot===0||assignedSlot===2?teamScores[0]>teamScores[1]:teamScores[1]>teamScores[0];scoreLine=`Team Blue ${teamScores[0]} — ${teamScores[1]} Team Red`}
  else if(mode==='online4'){won=scores[assignedSlot]===Math.max(...scores);scoreLine=scores.map((s,i)=>`P${i+1}: ${s}`).join(' · ')}
+ else if(isOnline()){const opponentSlot=assignedSlot===0?1:0;won=scores[assignedSlot]>scores[opponentSlot];scoreLine=`${scores[0]} — ${scores[1]}`}
  else {won=scores[0]>scores[1];scoreLine=`${scores[0]} — ${scores[1]}`}
  $('winner').textContent=won?'🏆 MATCH COMPLETE — YOU WON!':'🏁 MATCH COMPLETE';
  $('finalScore').textContent=scoreLine;
- if(!matchRewarded&&(mode==='bot'||isOnline())){const earned=20+(won?10:0);profile.coins+=earned;saveProfile();$('rewardMsg').textContent=`+${earned} coins ${won?'(includes win bonus)':'for finishing the match'}`;matchRewarded=true}else $('rewardMsg').textContent=mode==='local1'?'Local 1v1 does not award coins or use upgrades.':'';
+ if(!matchRewarded&&(mode==='bot'||isOnline())){const earned=won?(mode==='bot'?(['Hard','Impossible'].includes($('difficulty').value)?10:5):20):0;if(earned){profile.coins+=earned;saveProfile();$('rewardMsg').textContent=`+${earned} coins for winning!`;}else $('rewardMsg').textContent='No coins this time — win the match to earn coins.';matchRewarded=true}else $('rewardMsg').textContent=mode==='local1'?'Local 1v1 does not award coins or use upgrades.':'';
  show('over');if(isOnline()&&onlineHost)broadcastState(true);
 }
 function held(...names){return names.some(k=>!!keys[k]||!!keys[k.toLowerCase()]||!!keys[k.toUpperCase()])}
 function localInputFor(p){
- if(isOnline())return p.id===assignedSlot?{left:held('ArrowLeft'),right:held('ArrowRight'),up:held('ArrowUp'),down:held('ArrowDown'),sprint:held('Shift')}:null;
+ if(isOnline())return p.id===assignedSlot?{left:heldAction('left'),right:heldAction('right'),up:heldAction('up'),down:heldAction('down'),sprint:heldAction('sprint')}:null;
  if(p.id===0)return {left:heldAction('left'),right:heldAction('right'),up:heldAction('up'),down:heldAction('down'),sprint:heldAction('sprint')};
  if(mode==='local1'&&p.id===1)return {left:heldAction('p2left'),right:heldAction('p2right'),up:false,down:false,sprint:heldAction('p2sprint')};
  return null;
@@ -304,7 +309,8 @@ function draw(){
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#eaf8df';ctx.fillRect(0,0,W,H);
  ctx.strokeStyle='#b4cfaa';ctx.lineWidth=2;ctx.setLineDash([10,10]);ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();ctx.setLineDash([]);
  ctx.fillStyle='#18344b';ctx.font='bold 18px Arial';ctx.textAlign='left';ctx.fillText(`${mode.toUpperCase().replace('ONLINE','ONLINE ')}`,14,24);ctx.fillText(`BALL SPEED ${speedMult.toFixed(2)}×${performance.now()<fireballUntil?'  🔥 FIREBALL!':''}`,14,48);
- if(fireballEnabled&&fireballChargeStart){const charge=Math.min(1,(performance.now()-fireballChargeStart)/1200);ctx.fillStyle='#18344b';ctx.fillRect(W/2-100,58,200,12);ctx.fillStyle='#ff7b22';ctx.fillRect(W/2-100,58,200*charge,12);ctx.fillStyle='#18344b';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText('FIREBALL CHARGE',W/2,54)}
+ const fireballHud=$('fireballOverlay');fireballHud.style.display=running&&fireballEnabled?'block':'none';if(fireballEnabled){const progress=fireballProgress();$('fireballFill').style.height=(progress*100)+'%';$('fireballMeterText').textContent=progress>=1?'READY':Math.ceil((fireballCooldownUntil-performance.now())/1000)+'s';}
+ $('fireballFlash').style.display=running&&performance.now()<fireballFlashUntil?'flex':'none';
  if(teamMode()){ctx.fillText(`BLUE TEAM ${teamScores[0]}`,14,H/2-12);ctx.textAlign='right';ctx.fillText(`RED TEAM ${teamScores[1]}`,W-14,H/2+22)}
  else{ctx.textAlign='center';ctx.fillText(scoreText(),W/2, H/2+7)}
  for(const p of players){
@@ -319,7 +325,7 @@ function draw(){
   ctx.fillRect(bx,by,p.edge<=1?88:88,5);ctx.fillStyle=p.energy>25?'#37c978':'#ff6b59';ctx.fillRect(bx,by,88*p.energy/100,5);
  }
  ctx.beginPath();ctx.ellipse(ball.x+3,ball.y+6,ball.r,ball.r*.75,0,0,Math.PI*2);ctx.fillStyle='#0002';ctx.fill();
- const g=ctx.createRadialGradient(ball.x-5,ball.y-5,2,ball.x,ball.y,ball.r);g.addColorStop(0,'#fff6ad');g.addColorStop(1,'#ef7900');ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#a65b00';ctx.stroke();
+ const g=ctx.createRadialGradient(ball.x-5,ball.y-5,2,ball.x,ball.y,ball.r);g.addColorStop(0,performance.now()<fireballUntil?'#fff0f0':'#fff6ad');g.addColorStop(1,performance.now()<fireballUntil?'#e00000':'#ef7900');ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fillStyle=performance.now()<fireballUntil?'#f00000':g;ctx.fill();ctx.strokeStyle=performance.now()<fireballUntil?'#7d0800':'#a65b00';ctx.stroke();
  if(running&&performance.now()<graceUntil){ctx.fillStyle='#102238dd';ctx.fillRect(W/2-130,H/2-42,260,84);ctx.fillStyle='white';ctx.font='bold 29px Arial';ctx.textAlign='center';ctx.fillText('GET READY: '+Math.ceil((graceUntil-performance.now())/1000),W/2,H/2+10)}
  ctx.textAlign='left';
 }
@@ -328,19 +334,26 @@ function loop(now=performance.now()){
  const dt=lastFrame?Math.min(34,now-lastFrame):16.667;lastFrame=now;update(dt);draw();raf=requestAnimationFrame(loop)
 }
 function togglePause(){if(!running||isOnline())return;paused=!paused;show(paused?'pause':null);if(!paused)loop()}
-document.addEventListener('keydown',e=>{if(capturingBind){e.preventDefault();if(e.key==='Escape'){capturingBind=null;$('bindStatus').textContent='Keybind change cancelled.';renderKeybinds();return}const used=Object.keys(keybinds).find(a=>a!==capturingBind&&keybinds[a]===e.key);if(used){$('bindStatus').textContent='That key is already assigned to '+used+'. Choose another key.';return}keybinds[capturingBind]=e.key;localStorage.setItem('downballKeybinds',JSON.stringify(keybinds));capturingBind=null;$('bindStatus').textContent='Keybind saved.';renderKeybinds();refreshControlsText();return}if(e.key===keybinds.fireball&&!e.repeat&&fireballEnabled&&(!settingsLocked||running)){fireballChargeStart=performance.now();$('abilityStatus').textContent='Charging Fireball… release '+keyToken(keybinds.fireball)+' to shoot!'}if(e.key==='Escape'){e.preventDefault();if(!e.repeat)togglePause();return}keys[e.key]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
-document.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key===keybinds.fireball&&fireballChargeStart){const charged=performance.now()-fireballChargeStart;fireballChargeStart=0;if(fireballEnabled&&charged>=180){if(isOnline()&&!onlineHost){if(sendInput)sendInput({left:heldAction('left'),right:heldAction('right'),up:heldAction('up'),down:heldAction('down'),sprint:heldAction('sprint'),fireball:true})}else activateFireball()}$('abilityStatus').textContent=fireballEnabled?'Fireball ready · hold '+keyToken(keybinds.fireball)+' and release to shoot.':'Fireball disabled.'}});
-function activateFireball(){if(!fireballEnabled||!running||performance.now()<graceUntil)return;const mag=Math.hypot(ball.vx,ball.vy)||1;ball.vx=ball.vx/mag* Math.min(24,mag*3);ball.vy=ball.vy/mag*Math.min(24,mag*3);fireballUntil=performance.now()+1400;$('abilityStatus').textContent='🔥 FIREBALL SHOT!'}
-function refreshControlsText(){$('controls').textContent=`Move: ${keyToken(keybinds.left)} / ${keyToken(keybinds.right)} · Sprint: ${keyToken(keybinds.sprint)} · Fireball: ${keyToken(keybinds.fireball)}.`}
+document.addEventListener('keydown',e=>{
+ if(capturingBind){e.preventDefault();if(e.key==='Escape'){capturingBind=null;$('bindStatus').textContent='Keybind change cancelled.';renderKeybinds();return}const used=Object.keys(keybinds).find(a=>a!==capturingBind&&sameKey(keybinds[a],e.key));if(used){$('bindStatus').textContent='That key is already assigned to '+used+'. Choose another key.';return}keybinds[capturingBind]=e.key;localStorage.setItem('downballKeybinds',JSON.stringify(keybinds));capturingBind=null;$('bindStatus').textContent='Keybind saved.';renderKeybinds();refreshControlsText();$('controlsHint').textContent='Press '+keyToken(keybinds.controls)+' to open Controls & keybinds.';return
+ }
+ if(sameKey(e.key,keybinds.controls)&&!e.repeat&&!running){e.preventDefault();toggleControlsGui();return}
+ if(sameKey(e.key,keybinds.fireball)&&!e.repeat&&fireballEnabled&&running){e.preventDefault();if(fireballCooldownUntil>performance.now()){$('abilityStatus').textContent='Fireball charging: '+Math.ceil((fireballCooldownUntil-performance.now())/1000)+'s left.'}else if(isOnline()&&!onlineHost){if(sendInput)sendInput({left:heldAction('left'),right:heldAction('right'),up:heldAction('up'),down:heldAction('down'),sprint:heldAction('sprint'),fireball:true});}else activateFireball()}
+ if(e.key==='Escape'){e.preventDefault();if(!e.repeat)togglePause();return}keys[e.key]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false});
+function activateFireball(){const now=performance.now();if(!fireballEnabled||!running||now<graceUntil||now<fireballCooldownUntil)return;const mag=Math.hypot(ball.vx,ball.vy)||1;ball.vx=ball.vx/mag*Math.min(24,mag*3);ball.vy=ball.vy/mag*Math.min(24,mag*3);fireballUntil=now+1400;fireballCooldownUntil=now+60000;fireballFlashUntil=now+650;$('abilityStatus').textContent='🔥 FIREBALL! Cooldown: 60 seconds.';if(isOnline()&&onlineHost)broadcastState(true)}
+function fireballProgress(){const now=performance.now();return fireballCooldownUntil<=now?1:Math.max(0,1-(fireballCooldownUntil-now)/60000)}
+function refreshControlsText(){$('controls').textContent=`Move: ${keyToken(keybinds.left)} / ${keyToken(keybinds.right)} · Sprint: ${keyToken(keybinds.sprint)} · Fireball: ${keyToken(keybinds.fireball)} · Controls GUI: ${keyToken(keybinds.controls)}.`}
 $('mode').onchange=()=>{
  mode=$('mode').value;$('botOptions').classList.toggle('hidden',mode!=='bot');$('onlinePanel').classList.toggle('hidden',!isOnline());$('upgrades').classList.toggle('hidden',mode==='local1');
  $('startBtn').classList.toggle('hidden',isOnline());
  refreshControlsText();updateSettingsUI();
  if(isOnline())$('netStatus').textContent='Create a room or join with a room code.';
 };
-$('rounds').oninput=e=>$('roundNum').textContent=e.target.value;renderKeybinds();refreshControlsText();updateSettingsUI();
+$('rounds').oninput=e=>$('roundNum').textContent=e.target.value;renderKeybinds();refreshControlsText();$('controlsHint').textContent='Press '+keyToken(keybinds.controls)+' to open Controls & keybinds.';updateSettingsUI();
 function syncMatchButtons(){updateSettingsUI()}
-$('menuFireballToggle').onchange=()=>{if(settingsLocked||isOnline()&&!onlineHost){updateSettingsUI();return}fireballEnabled=$('menuFireballToggle').checked;if(!fireballEnabled)fireballChargeStart=0;saveSettings();$('abilityStatus').textContent=fireballEnabled?'Fireball enabled for the next match.':'Fireball disabled for the next match.';if(isOnline()&&onlineHost)broadcastState(true)};
+$('menuFireballToggle').onchange=()=>{if(settingsLocked||isOnline()&&!onlineHost){updateSettingsUI();return}fireballEnabled=$('menuFireballToggle').checked;if(!fireballEnabled)fireballUntil=0;saveSettings();$('abilityStatus').textContent=fireballEnabled?'Fireball enabled for the next match.':'Fireball disabled for the next match.';if(isOnline()&&onlineHost)broadcastState(true)};
 $('menuSpeedToggle').onchange=()=>{if(settingsLocked||isOnline()&&!onlineHost){updateSettingsUI();return}speedIncreaseEnabled=$('menuSpeedToggle').checked;if(!speedIncreaseEnabled)speedMult=1;saveSettings();if(isOnline()&&onlineHost)broadcastState(true)};
 $('startBtn').onclick=startGame;$('next').onclick=nextRound;$('again').onclick=()=>{if(isOnline()){if(onlineHost)startGame();else $('netStatus').textContent='Ask the host to start the next match.'}else startGame()};
 $('resume').onclick=()=>{paused=false;show(null);loop()};$('restart').onclick=startGame;
@@ -349,7 +362,7 @@ $('onlineStart').onclick=startGame;
 
 function broadcastState(force){
  if(!onlineHost||!sendState||!room)return;
- sendState({type:'state',protocol:2,mode,roomCode:roomCodeActive,round,total,scores,teamScores,ball,players:players.map(p=>({...p})),roster:Math.min(modePlayers(),peerOrder.length+1),running,paused,speedMult,speedIncreaseEnabled,fireballEnabled,fireballRemaining:Math.max(0,fireballUntil-performance.now()),grace:Math.max(0,graceUntil-performance.now()),hostTime:performance.now(),force:!!force,roundWinner,matchOver});
+ sendState({type:'state',protocol:2,mode,roomCode:roomCodeActive,round,total,scores,teamScores,ball,players:players.map(p=>({...p})),roster:Math.min(modePlayers(),peerOrder.length+1),running,paused,speedMult,speedIncreaseEnabled,fireballEnabled,fireballRemaining:Math.max(0,fireballUntil-performance.now()),fireballCooldownRemaining:Math.max(0,fireballCooldownUntil-performance.now()),grace:Math.max(0,graceUntil-performance.now()),hostTime:performance.now(),force:!!force,roundWinner,matchOver});
 }
 function setNetworkStatus(text){$('netStatus').textContent=text}
 function updateLobby(rosterFromHost=null){
@@ -405,11 +418,11 @@ async function connectRoom(create){
   stateAction.onMessage=(data,{peerId}={})=>{
    if(onlineHost||peerId!==hostPeerId||!data||data.type!=='state'||data.protocol!==2)return;
    onlineConnected=true;mode=data.mode;round=data.round;total=data.total;scores=data.scores||scores;teamScores=data.teamScores||teamScores;
-   ball=data.ball||ball;speedMult=data.speedMult||1;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;fireballEnabled=data.fireballEnabled!==false;if(data.running){settingsLocked=true;onlineStarted=true}fireballUntil=performance.now()+(data.fireballRemaining||0);syncMatchButtons();
+   ball=data.ball||ball;speedMult=data.speedMult||1;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;fireballEnabled=data.fireballEnabled!==false;if(data.running){settingsLocked=true;onlineStarted=true}const wasFireballActive=fireballUntil>performance.now();fireballUntil=performance.now()+(data.fireballRemaining||0);fireballCooldownUntil=performance.now()+(data.fireballCooldownRemaining||0);if(!wasFireballActive&&data.fireballRemaining>0)fireballFlashUntil=performance.now()+650;syncMatchButtons();
    if(data.players){players=data.players.map((p,i)=>({...p,edge:p.edge??i,w:p.w??(i<2?132:16),h:p.h??(i<2?16:132),upgrade:profileByPeer[p.owner]||p.upgrade||{sprint:0,movement:0}}));assignedSlot=Math.max(0,players.findIndex(p=>p.owner===selfId));if(players[assignedSlot])players[assignedSlot].name='YOU'}
    updateLobby(data.roster||1);running=!!data.running;paused=!!data.paused;graceUntil=performance.now()+(data.grace||0);roundWinner=data.roundWinner;matchOver=!!data.matchOver;
    if(running){if(!$('start').classList.contains('hidden'))show(null);if(!raf)loop()}
-   else{stop();draw();if(matchOver){const won=teamMode()?((assignedSlot===0||assignedSlot===2)?teamScores[0]>teamScores[1]:teamScores[1]>teamScores[0]):mode==='online4'?scores[assignedSlot]===Math.max(...scores):scores[0]>scores[1];$('winner').textContent=won?'🏆 MATCH COMPLETE — YOU WON!':'🏁 MATCH COMPLETE';$('finalScore').textContent=teamMode()?`Team Blue ${teamScores[0]} — ${teamScores[1]} Team Red`:scores.slice(0,modePlayers()).map((v,i)=>`P${i+1}: ${v}`).join(' · ');if(!matchRewarded){const earned=20+(won?10:0);profile.coins+=earned;saveProfile();$('rewardMsg').textContent=`+${earned} coins ${won?'(includes win bonus)':'for finishing the match'}`;matchRewarded=true}show('over')}
+   else{stop();draw();if(matchOver){const won=teamMode()?((assignedSlot===0||assignedSlot===2)?teamScores[0]>teamScores[1]:teamScores[1]>teamScores[0]):mode==='online4'?scores[assignedSlot]===Math.max(...scores):scores[assignedSlot]>(scores[assignedSlot===0?1:0]||0);$('winner').textContent=won?'🏆 MATCH COMPLETE — YOU WON!':'🏁 MATCH COMPLETE';$('finalScore').textContent=teamMode()?`Team Blue ${teamScores[0]} — ${teamScores[1]} Team Red`:scores.slice(0,modePlayers()).map((v,i)=>`P${i+1}: ${v}`).join(' · ');if(!matchRewarded){const earned=won?20:0;if(earned){profile.coins+=earned;saveProfile();$('rewardMsg').textContent='+20 coins for winning!'}else $('rewardMsg').textContent='No coins this time — win the match to earn coins.';matchRewarded=true}show('over')}
     else if(roundWinner!==null){$('roundTitle').textContent=`ROUND ${round}/${total} COMPLETE`;$('roundMsg').textContent=winnerLabel(roundWinner)+' wins the round!';$('roundScore').textContent=scoreText();$('next').textContent=round===total?'Final results':'Next round';show('roundScreen')}}
   };
   room.onPeerJoin=peerId=>{
