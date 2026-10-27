@@ -9,16 +9,14 @@
 h1,h2,p{margin:8px 0}h1{font-size:clamp(22px,4vw,34px)}canvas{display:block;width:min(900px,98vw);height:auto;border:4px solid #203b53;border-radius:14px;background:#eff9ff;box-shadow:0 8px 24px #173b5522}
 #hud{width:min(900px,98vw);display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;font-weight:700}
 .screen{position:fixed;inset:0;background:#0d2238ed;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;overflow:auto;z-index:5}.hidden{display:none!important}.panel{width:min(640px,98vw);padding:22px;border:1px solid #ffffff40;border-radius:18px;background:#ffffff12;box-shadow:0 16px 60px #0003}
-button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:4px}button{background:#ffca28;color:#152b3e;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text]{width:100%}input[type=range]{width:100%}.small{font-size:13px;line-height:1.5;opacity:.9}.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.status{color:#ffe082;min-height:20px}.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:12px 0}.card{border:1px solid #ffffff38;border-radius:12px;padding:12px;background:#ffffff0d}.card strong{display:block;font-size:17px}.coins{color:#ffdf58;font-weight:900}.note{color:#cfe9ff}#matchTools{width:min(900px,98vw);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}#matchTools button,#matchTools label{background:#173b55;color:white;border:1px solid #9fc4dc;border-radius:9px;padding:9px 12px;font-weight:700}#roomList{display:grid;gap:6px;max-height:180px;overflow:auto;text-align:left}.roomItem{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#ffffff12;border:1px solid #ffffff35;border-radius:9px;padding:8px}.roomItem button{margin:0}.toggleline{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}.toggleline input{width:auto}
+button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:4px}button{background:#ffca28;color:#152b3e;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text]{width:100%}input[type=range]{width:100%}.small{font-size:13px;line-height:1.5;opacity:.9}.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.status{color:#ffe082;min-height:20px}.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:12px 0}.card{border:1px solid #ffffff38;border-radius:12px;padding:12px;background:#ffffff0d}.card strong{display:block;font-size:17px}.coins{color:#ffdf58;font-weight:900}.note{color:#cfe9ff}#matchTools{width:min(900px,98vw);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}#matchTools button,#matchTools label{background:#173b55;color:white;border:1px solid #9fc4dc;border-radius:9px;padding:9px 12px;font-weight:700}#roomList{display:grid;gap:6px;max-height:180px;overflow:auto;text-align:left}.roomItem{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#ffffff12;border:1px solid #ffffff35;border-radius:9px;padding:8px}.roomItem button{margin:0}.toggleline{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}.toggleline input{width:auto}.bindGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin-top:8px}.bindRow{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#ffffff10;border-radius:8px;padding:5px 8px}.bindRow button{padding:6px 8px;margin:0}.bindRow span{font-size:13px}
 </style>
 </head>
 <body>
 <div id="hud"><span id="hudMode">DOWNBALL SIMULATOR</span><span id="hudScore">Ready</span><span id="hudSpeed">Coins: 0</span></div>
 <canvas id="game" width="900" height="620" aria-label="Downball game court"></canvas>
 <div id="matchTools">
- <button id="fireballToggle" type="button">🔥 Fireball: ON</button>
- <button id="speedToggle" type="button">⚡ Speed increase: ON (max 2×)</button>
- <span id="abilityStatus" class="small">Hold F to charge Fireball, release to shoot.</span>
+ <span id="abilityStatus" class="small">Fireball and ball-speed settings are locked for this match.</span>
 </div>
 
 <div id="start" class="screen"><div class="panel">
@@ -43,7 +41,15 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
 </select>
 <div id="botOptions"><label for="difficulty">Bot difficulty</label><select id="difficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Impossible</option></select></div>
 <label>Rounds: <b id="roundNum">3</b></label><input id="rounds" type="range" min="1" max="10" value="3">
-<div class="card" style="text-align:left;margin:10px 0"><strong>🎮 Controls</strong><div class="small" id="controls">Move: ← / → · Sprint: Shift · Fireball: hold F to charge, release to shoot.</div><div class="small">Online side courts: use ↑ / ↓ to move. Local 1v1 player 2: A / D · Space to sprint. Esc pauses solo/local matches.</div></div>
+<div class="card" style="text-align:left;margin:10px 0"><strong>⚙️ Match settings (main menu only)</strong>
+ <div class="toggleline"><label for="menuFireballToggle">🔥 Fireball ability</label><input id="menuFireballToggle" type="checkbox" checked></div>
+ <div class="small">Hold your Fireball key to charge, then release to shoot at up to 3× speed. Settings lock when a match starts. In online rooms, only the host can set these options before starting.</div>
+ <div class="toggleline"><label for="menuSpeedToggle">⚡ Gradually increase ball speed (max 2×)</label><input id="menuSpeedToggle" type="checkbox" checked></div>
+ <p class="small" id="settingsLockNote">Settings can be changed here before the match starts.</p>
+</div>
+<div class="card" style="text-align:left;margin:10px 0"><strong>🎮 Controls & keybinds</strong><div class="small" id="controls">Move: ← / → · Sprint: Shift · Fireball: F</div>
+ <div class="bindGrid" id="bindGrid"></div><p class="small" id="bindStatus">Select Change next to a control, then press the key you want.</p>
+ <div class="small">Online side courts use Up/Down for movement. Esc pauses solo/local matches. Keybinds are saved in this browser.</div></div>
 <div id="upgrades">
 <div class="cardgrid">
 <div class="card"><strong>🪙 Coins: <span id="coinCount">0</span></strong><span class="small">Earn coins when a bot or online match ends, win or lose.</span></div>
@@ -81,8 +87,17 @@ let room=null,sendInput=null,sendState=null,sendProfile=null,sendStart=null,send
 const SUPABASE_URL='https://pyfabzapzjtzayosvdzb.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_V5NEsQTyMwabVGh3vF8BpQ_mpmQ53tD';
 let supabase=null,authUser=null,accountProfileReady=false,accountSyncTimer=null;
-let fireballEnabled=true,fireballChargeStart=0,fireballUntil=0,speedIncreaseEnabled=true,lastFireballUi=0;
+let fireballEnabled=localStorage.getItem('downballFireballEnabled')!=='false',fireballChargeStart=0,fireballUntil=0,speedIncreaseEnabled=localStorage.getItem('downballSpeedIncreaseEnabled')!=='false',lastFireballUi=0,settingsLocked=false,capturingBind=null;
 const appConfig={appId:'downball-simulator-online-2026'};
+const DEFAULT_BINDS={left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',sprint:'Shift',fireball:'f',p2left:'a',p2right:'d',p2sprint:' '};
+let keybinds=loadKeybinds();
+function loadKeybinds(){try{return {...DEFAULT_BINDS,...JSON.parse(localStorage.getItem('downballKeybinds')||'{}')}}catch{return {...DEFAULT_BINDS}}}
+function keyToken(key){return key===' '?'Space':key==='Escape'?'Esc':key.startsWith('Arrow')?key.replace('Arrow','') : key.length===1?key.toUpperCase():key}
+function heldAction(action){const k=keybinds[action];return !!keys[k]||!!keys[String(k).toLowerCase()]||!!keys[String(k).toUpperCase()]}
+function renderKeybinds(){const names={left:'Move left',right:'Move right',up:'Move up (online)',down:'Move down (online)',sprint:'Sprint',fireball:'Fireball',p2left:'Player 2 left',p2right:'Player 2 right',p2sprint:'Player 2 sprint'};const grid=$('bindGrid');if(!grid)return;grid.replaceChildren();for(const [action,label] of Object.entries(names)){const row=document.createElement('div');row.className='bindRow';const span=document.createElement('span');span.textContent=label+': '+keyToken(keybinds[action]);const btn=document.createElement('button');btn.textContent=capturingBind===action?'Press a key…':'Change';btn.onclick=()=>{capturingBind=action;$('bindStatus').textContent='Press any key for '+label+'. Press Escape to cancel.';renderKeybinds()};row.append(span,btn);grid.append(row)}}
+function updateSettingsUI(){ $('menuFireballToggle').checked=fireballEnabled;$('menuSpeedToggle').checked=speedIncreaseEnabled;const canEdit=!settingsLocked&&(!isOnline()||onlineHost);$('menuFireballToggle').disabled=!canEdit;$('menuSpeedToggle').disabled=!canEdit;$('settingsLockNote').textContent=settingsLocked?'Locked for this match. Return to the menu and leave the online room to change settings for a new match.':isOnline()&&!onlineHost?'Only the room host can set these options before the match starts.':'Settings lock when the match starts.'; }
+function saveSettings(){localStorage.setItem('downballFireballEnabled',String(fireballEnabled));localStorage.setItem('downballSpeedIncreaseEnabled',String(speedIncreaseEnabled));updateSettingsUI()}
+
 const screens=['start','pause','roundScreen','over'];
 function loadProfile(){try{return {...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem('downballProfile')||'{}')}}catch{return {...DEFAULT_PROFILE}}}
 function saveProfile(){localStorage.setItem(authUser?`downballProfile_${authUser.id}`:'downballProfile',JSON.stringify(profile));refreshShop();if(authUser&&accountProfileReady){clearTimeout(accountSyncTimer);accountSyncTimer=setTimeout(syncAccountProfile,500)}}
@@ -158,13 +173,13 @@ function startGame(){
   if(!onlineConnected||!room){$('netStatus').textContent='Connect to a room first.';return}
   if(!onlineHost){$('netStatus').textContent='Wait for the host to start.';return}
   const need=modePlayers();if(peerOrder.length+1<need){$('netStatus').textContent=`Waiting for players: ${peerOrder.length+1}/${need}`;return}
-  if(sendStart)sendStart({type:'start',mode,total:+$('rounds').value});
+  if(sendStart)sendStart({type:'start',mode,total:+$('rounds').value,fireballEnabled,speedIncreaseEnabled});
   beginMatch(+$('rounds').value);return;
  }
- stop();mode=$('mode').value;total=+$('rounds').value;round=1;scores=[0,0,0,0];teamScores=[0,0];matchRewarded=false;matchOver=false;paused=false;createPlayers();resetBall();running=true;show(null);loop();
+ stop();mode=$('mode').value;settingsLocked=true;updateSettingsUI();total=+$('rounds').value;round=1;scores=[0,0,0,0];teamScores=[0,0];matchRewarded=false;matchOver=false;paused=false;createPlayers();resetBall();running=true;show(null);loop();
 }
 function beginMatch(rounds){
- stop();total=rounds;round=1;scores=[0,0,0,0];teamScores=[0,0];matchRewarded=false;matchOver=false;paused=false;onlineStarted=true;createPlayers();assignOnlineSlots();resetBall();running=true;show(null);loop();
+ stop();settingsLocked=true;onlineStarted=true;updateSettingsUI();total=rounds;round=1;scores=[0,0,0,0];teamScores=[0,0];matchRewarded=false;matchOver=false;paused=false;onlineStarted=true;createPlayers();assignOnlineSlots();resetBall();running=true;show(null);loop();
 }
 function assignOnlineSlots(){
  if(!isOnline())return;
@@ -204,8 +219,8 @@ function finishMatch(){
 function held(...names){return names.some(k=>!!keys[k]||!!keys[k.toLowerCase()]||!!keys[k.toUpperCase()])}
 function localInputFor(p){
  if(isOnline())return p.id===assignedSlot?{left:held('ArrowLeft'),right:held('ArrowRight'),up:held('ArrowUp'),down:held('ArrowDown'),sprint:held('Shift')}:null;
- if(p.id===0)return {left:held('ArrowLeft'),right:held('ArrowRight'),up:false,down:false,sprint:held('Shift')};
- if(mode==='local1'&&p.id===1)return {left:held('a'),right:held('d'),up:false,down:false,sprint:held(' ')};
+ if(p.id===0)return {left:heldAction('left'),right:heldAction('right'),up:heldAction('up'),down:heldAction('down'),sprint:heldAction('sprint')};
+ if(mode==='local1'&&p.id===1)return {left:heldAction('p2left'),right:heldAction('p2right'),up:false,down:false,sprint:heldAction('p2sprint')};
  return null;
 }
 function movePlayer(p,input,upgrade={sprint:0,movement:0}){
@@ -313,22 +328,23 @@ function loop(now=performance.now()){
  const dt=lastFrame?Math.min(34,now-lastFrame):16.667;lastFrame=now;update(dt);draw();raf=requestAnimationFrame(loop)
 }
 function togglePause(){if(!running||isOnline())return;paused=!paused;show(paused?'pause':null);if(!paused)loop()}
-document.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='f'&&!e.repeat&&fireballEnabled){fireballChargeStart=performance.now();$('abilityStatus').textContent='Charging Fireball… release F to shoot!'}if(e.key==='Escape'){e.preventDefault();if(!e.repeat)togglePause();return}keys[e.key]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
-document.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key.toLowerCase()==='f'&&fireballChargeStart){const charged=performance.now()-fireballChargeStart;fireballChargeStart=0;if(fireballEnabled&&charged>=180){if(isOnline()&&!onlineHost){if(sendInput)sendInput({left:held('ArrowLeft'),right:held('ArrowRight'),up:held('ArrowUp'),down:held('ArrowDown'),sprint:held('Shift'),fireball:true})}else activateFireball()}$('abilityStatus').textContent=fireballEnabled?'Fireball ready · hold F and release to shoot.':'Fireball disabled.'}});
+document.addEventListener('keydown',e=>{if(capturingBind){e.preventDefault();if(e.key==='Escape'){capturingBind=null;$('bindStatus').textContent='Keybind change cancelled.';renderKeybinds();return}const used=Object.keys(keybinds).find(a=>a!==capturingBind&&keybinds[a]===e.key);if(used){$('bindStatus').textContent='That key is already assigned to '+used+'. Choose another key.';return}keybinds[capturingBind]=e.key;localStorage.setItem('downballKeybinds',JSON.stringify(keybinds));capturingBind=null;$('bindStatus').textContent='Keybind saved.';renderKeybinds();refreshControlsText();return}if(e.key===keybinds.fireball&&!e.repeat&&fireballEnabled&&(!settingsLocked||running)){fireballChargeStart=performance.now();$('abilityStatus').textContent='Charging Fireball… release '+keyToken(keybinds.fireball)+' to shoot!'}if(e.key==='Escape'){e.preventDefault();if(!e.repeat)togglePause();return}keys[e.key]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
+document.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key===keybinds.fireball&&fireballChargeStart){const charged=performance.now()-fireballChargeStart;fireballChargeStart=0;if(fireballEnabled&&charged>=180){if(isOnline()&&!onlineHost){if(sendInput)sendInput({left:heldAction('left'),right:heldAction('right'),up:heldAction('up'),down:heldAction('down'),sprint:heldAction('sprint'),fireball:true})}else activateFireball()}$('abilityStatus').textContent=fireballEnabled?'Fireball ready · hold '+keyToken(keybinds.fireball)+' and release to shoot.':'Fireball disabled.'}});
 function activateFireball(){if(!fireballEnabled||!running||performance.now()<graceUntil)return;const mag=Math.hypot(ball.vx,ball.vy)||1;ball.vx=ball.vx/mag* Math.min(24,mag*3);ball.vy=ball.vy/mag*Math.min(24,mag*3);fireballUntil=performance.now()+1400;$('abilityStatus').textContent='🔥 FIREBALL SHOT!'}
+function refreshControlsText(){$('controls').textContent=`Move: ${keyToken(keybinds.left)} / ${keyToken(keybinds.right)} · Sprint: ${keyToken(keybinds.sprint)} · Fireball: ${keyToken(keybinds.fireball)}.`}
 $('mode').onchange=()=>{
  mode=$('mode').value;$('botOptions').classList.toggle('hidden',mode!=='bot');$('onlinePanel').classList.toggle('hidden',!isOnline());$('upgrades').classList.toggle('hidden',mode==='local1');
  $('startBtn').classList.toggle('hidden',isOnline());
- $('controls').textContent=mode==='local1'?'P1: ←/→ + Shift. P2: A/D + Space. Fireball: hold F, release to shoot.':mode==='bot'?'←/→ to move, Shift to sprint. Fireball: hold F, release to shoot.':'Online: ←/→ or ↑/↓ depending on your court edge; Shift to sprint; hold F then release for Fireball.';
+ refreshControlsText();updateSettingsUI();
  if(isOnline())$('netStatus').textContent='Create a room or join with a room code.';
 };
-$('rounds').oninput=e=>$('roundNum').textContent=e.target.value;
-function syncMatchButtons(){$('fireballToggle').textContent='🔥 Fireball: '+(fireballEnabled?'ON':'OFF');$('speedToggle').textContent='⚡ Speed increase: '+(speedIncreaseEnabled?'ON (max 2×)':'OFF (1×)')}
-$('fireballToggle').onclick=()=>{if(isOnline()&&!onlineHost){$('abilityStatus').textContent='Only the host can toggle Fireball for this online match.';return}fireballEnabled=!fireballEnabled;if(!fireballEnabled)fireballChargeStart=0;syncMatchButtons();$('abilityStatus').textContent=fireballEnabled?'Fireball enabled · hold F and release to shoot.':'Fireball disabled for this match.';if(isOnline()&&onlineHost)broadcastState(true)};
-$('speedToggle').onclick=()=>{if(isOnline()&&!onlineHost){$('abilityStatus').textContent='Only the host can change match ball-speed settings.';return}speedIncreaseEnabled=!speedIncreaseEnabled;if(!speedIncreaseEnabled)speedMult=1;syncMatchButtons();if(isOnline()&&onlineHost)broadcastState(true)};
+$('rounds').oninput=e=>$('roundNum').textContent=e.target.value;renderKeybinds();refreshControlsText();updateSettingsUI();
+function syncMatchButtons(){updateSettingsUI()}
+$('menuFireballToggle').onchange=()=>{if(settingsLocked||isOnline()&&!onlineHost){updateSettingsUI();return}fireballEnabled=$('menuFireballToggle').checked;if(!fireballEnabled)fireballChargeStart=0;saveSettings();$('abilityStatus').textContent=fireballEnabled?'Fireball enabled for the next match.':'Fireball disabled for the next match.';if(isOnline()&&onlineHost)broadcastState(true)};
+$('menuSpeedToggle').onchange=()=>{if(settingsLocked||isOnline()&&!onlineHost){updateSettingsUI();return}speedIncreaseEnabled=$('menuSpeedToggle').checked;if(!speedIncreaseEnabled)speedMult=1;saveSettings();if(isOnline()&&onlineHost)broadcastState(true)};
 $('startBtn').onclick=startGame;$('next').onclick=nextRound;$('again').onclick=()=>{if(isOnline()){if(onlineHost)startGame();else $('netStatus').textContent='Ask the host to start the next match.'}else startGame()};
 $('resume').onclick=()=>{paused=false;show(null);loop()};$('restart').onclick=startGame;
-$('home').onclick=$('home2').onclick=()=>{running=false;paused=false;stop();show('start')};
+$('home').onclick=$('home2').onclick=()=>{running=false;paused=false;stop();settingsLocked=false;onlineStarted=false;updateSettingsUI();show('start')};
 $('onlineStart').onclick=startGame;
 
 function broadcastState(force){
@@ -342,7 +358,7 @@ function updateLobby(rosterFromHost=null){
  $('onlineStart').disabled=!onlineHost||n<needed;
 }
 function clearRoomTimers(){if(joinTimeout){clearTimeout(joinTimeout);joinTimeout=null}if(lobbyBroadcastTimer){clearInterval(lobbyBroadcastTimer);lobbyBroadcastTimer=null}}
-function leaveCurrentRoom(){clearRoomTimers();if(roomListingTimer){clearInterval(roomListingTimer);roomListingTimer=null}removePublicListing();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={}}
+function leaveCurrentRoom(){settingsLocked=false;onlineStarted=false;updateSettingsUI();clearRoomTimers();if(roomListingTimer){clearInterval(roomListingTimer);roomListingTimer=null}removePublicListing();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={}}
 async function connectRoom(create){
  let code=$('roomCode').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,24);
  const selectedVisibility=$('roomVisibility').value;
@@ -365,13 +381,13 @@ async function connectRoom(create){
    if(!data||!peerId)return;
    if(data.type==='hello'&&onlineHost){
     if(!peerOrder.includes(peerId))peerOrder.push(peerId);
-    presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});
+    presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive,fireballEnabled,speedIncreaseEnabled,settingsLocked},{target:peerId});
     assignOnlineSlots();updateLobby();broadcastState(true);updatePublicListing();return;
    }
    if(data.type==='host'&&!onlineHost){
     if(data.protocol!==3||data.roomCode!==roomCodeActive)return;
     if(hostPeerId&&hostPeerId!==peerId)return;
-    hostPeerId=peerId;hostSeen=true;onlineConnected=true;
+    hostPeerId=peerId;hostSeen=true;onlineConnected=true;fireballEnabled=data.fireballEnabled!==false;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;settingsLocked=!!data.settingsLocked;updateSettingsUI();
     mode=data.mode;$('mode').value=mode;$('mode').onchange();
     setNetworkStatus('Connected to host. Waiting for players…');
     sendProfile({sprint:profile.sprint,movement:profile.movement});updateLobby();return;
@@ -383,13 +399,13 @@ async function connectRoom(create){
   };
   startAction.onMessage=(data,{peerId}={})=>{
    if(onlineHost||peerId!==hostPeerId||!data)return;
-   if(data.type==='start'){mode=data.mode;$('mode').value=mode;$('mode').onchange();beginMatch(data.total)}
+   if(data.type==='start'){mode=data.mode;fireballEnabled=data.fireballEnabled!==false;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;settingsLocked=true;saveSettings();$('mode').value=mode;$('mode').onchange();beginMatch(data.total)}
    if(data.type==='next'){round=data.round;resetBall();running=true;show(null);loop()}
   };
   stateAction.onMessage=(data,{peerId}={})=>{
    if(onlineHost||peerId!==hostPeerId||!data||data.type!=='state'||data.protocol!==2)return;
    onlineConnected=true;mode=data.mode;round=data.round;total=data.total;scores=data.scores||scores;teamScores=data.teamScores||teamScores;
-   ball=data.ball||ball;speedMult=data.speedMult||1;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;fireballEnabled=data.fireballEnabled!==false;fireballUntil=performance.now()+(data.fireballRemaining||0);syncMatchButtons();
+   ball=data.ball||ball;speedMult=data.speedMult||1;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;fireballEnabled=data.fireballEnabled!==false;if(data.running){settingsLocked=true;onlineStarted=true}fireballUntil=performance.now()+(data.fireballRemaining||0);syncMatchButtons();
    if(data.players){players=data.players.map((p,i)=>({...p,edge:p.edge??i,w:p.w??(i<2?132:16),h:p.h??(i<2?16:132),upgrade:profileByPeer[p.owner]||p.upgrade||{sprint:0,movement:0}}));assignedSlot=Math.max(0,players.findIndex(p=>p.owner===selfId));if(players[assignedSlot])players[assignedSlot].name='YOU'}
    updateLobby(data.roster||1);running=!!data.running;paused=!!data.paused;graceUntil=performance.now()+(data.grace||0);roundWinner=data.roundWinner;matchOver=!!data.matchOver;
    if(running){if(!$('start').classList.contains('hidden'))show(null);if(!raf)loop()}
@@ -398,7 +414,7 @@ async function connectRoom(create){
   };
   room.onPeerJoin=peerId=>{
    if(!peerOrder.includes(peerId))peerOrder.push(peerId);
-   if(onlineHost){presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});assignOnlineSlots();updateLobby();broadcastState(true);updatePublicListing()}
+   if(onlineHost){presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive,fireballEnabled,speedIncreaseEnabled,settingsLocked},{target:peerId});assignOnlineSlots();updateLobby();broadcastState(true);updatePublicListing()}
    else presenceAction.send({type:'hello',protocol:3,roomCode:roomCodeActive},{target:peerId});
   };
   room.onPeerLeave=peerId=>{
@@ -412,7 +428,7 @@ async function connectRoom(create){
    // A room ID alone does not prove a room exists. Require a live host handshake.
    joinTimeout=setTimeout(()=>{if(room&&!hostSeen){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Room not found: no host responded. Check the code and ask the host to create the room first.');updateLobby()}},10000);
   }
-  updateLobby();$('onlineStart').disabled=!onlineHost;
+  updateLobby();$('onlineStart').disabled=!onlineHost;updateSettingsUI();
  }catch(err){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Could not connect: '+(err?.message||err));updateLobby()}
 }
 $('createRoom').onclick=()=>connectRoom(true);$('joinRoom').onclick=()=>connectRoom(false);$('refreshRooms').onclick=loadPublicRooms;
