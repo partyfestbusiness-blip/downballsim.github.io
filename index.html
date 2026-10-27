@@ -289,13 +289,13 @@ function physicsStep(dt){
 }
 function smoothOnlineSnapshot(dt){
  if(!clientTargetBall||!clientTargetPlayers||!players.length)return;
- const alpha=Math.min(.55,1-Math.exp(-Math.max(1,dt)/58));
+ // Smooth remote state, but never pull the locally predicted paddle backwards on every snapshot.
+ const alpha=Math.min(.72,1-Math.exp(-Math.max(1,dt)/42));
  for(const key of ['x','y','vx','vy'])if(Number.isFinite(clientTargetBall[key]))ball[key]+=(clientTargetBall[key]-ball[key])*alpha;
  for(const target of clientTargetPlayers){
   const current=players.find(p=>p.id===target.id);if(!current)continue;
-  // Keep local prediction responsive; remote paddles are smoothed more aggressively.
-  const a=current.id===assignedSlot?alpha*.42:alpha;
-  for(const key of ['x','y','energy'])if(Number.isFinite(target[key]))current[key]+=(target[key]-current[key])*a;
+  if(current.id===assignedSlot){if(Number.isFinite(target.energy))current.energy+=(target.energy-current.energy)*Math.min(.35,alpha);continue;}
+  for(const key of ['x','y','energy'])if(Number.isFinite(target[key]))current[key]+=(target[key]-current[key])*alpha;
  }
 }
 function update(dt){
@@ -322,7 +322,7 @@ function update(dt){
  }
  if(performance.now()<graceUntil)return;
  physicsStep(Math.min(1.8,dt/16.667));
- if(isOnline()&&onlineHost&&performance.now()-lastBroadcast>50){broadcastState(false);lastBroadcast=performance.now()}
+ if(isOnline()&&onlineHost&&performance.now()-lastBroadcast>33){broadcastState(false);lastBroadcast=performance.now()}
 }
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#eaf8df';ctx.fillRect(0,0,W,H);
@@ -390,18 +390,25 @@ function updateLobby(rosterFromHost=null){
  $('onlineStart').disabled=!onlineHost||n<needed;
 }
 function clearRoomTimers(){if(joinTimeout){clearTimeout(joinTimeout);joinTimeout=null}if(lobbyBroadcastTimer){clearInterval(lobbyBroadcastTimer);lobbyBroadcastTimer=null}}
-function leaveCurrentRoom(){settingsLocked=false;onlineStarted=false;updateSettingsUI();clearRoomTimers();if(roomListingTimer){clearInterval(roomListingTimer);roomListingTimer=null}removePublicListing();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=sendChat=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={};clientTargetBall=null;clientTargetPlayers=null;lastInputSendAt=0;lastInputSignature=''}
+function leaveCurrentRoom(){if(onlineHost&&roomCodeActive)unmarkOwnedRoom(roomCodeActive);settingsLocked=false;onlineStarted=false;updateSettingsUI();clearRoomTimers();if(roomListingTimer){clearInterval(roomListingTimer);roomListingTimer=null}removePublicListing();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=sendChat=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={};clientTargetBall=null;clientTargetPlayers=null;lastInputSendAt=0;lastInputSignature=''}
 const BLOCKED_CHAT_WORDS=['fuck','fucking','shit','bullshit','bitch','asshole','dickhead','motherfucker','cunt','slut','whore'];
 function filterChatText(value){let text=String(value||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,160);for(const word of BLOCKED_CHAT_WORDS){const re=new RegExp('\\b'+word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi');text=text.replace(re,'*'.repeat(Math.min(word.length,10)))}return text}
 function appendChatMessage(name,rawText){const log=$('chatLog');if(!log)return;const text=filterChatText(rawText);if(!text)return;const empty=log.querySelector('.small');if(empty)log.replaceChildren();const row=document.createElement('div');row.className='chatLine';const who=document.createElement('strong');who.textContent=(String(name||'Player').slice(0,20))+': ';const body=document.createElement('span');body.textContent=text;row.append(who,body);log.append(row);while(log.children.length>60)log.firstElementChild.remove();log.scrollTop=log.scrollHeight}
 function turnConfigFromForm(){const urls=$('turnUrls').value.split(',').map(x=>x.trim()).filter(Boolean);if(!urls.length)return [];const username=$('turnUsername').value.trim(),credential=$('turnCredential').value;if(!username||!credential){setNetworkStatus('Enter both TURN username and credential, or leave all TURN fields blank.');return null}return [{urls,username,credential}]}
 $('chatForm').addEventListener('submit',e=>{e.preventDefault();const raw=$('chatInput').value;const text=filterChatText(raw);if(!text){$('chatStatus').textContent='Enter a message first.';return}if(!room||!onlineConnected||!sendChat){$('chatStatus').textContent='Join a room before chatting.';return}const now=Date.now();if(now-lastChatSentAt<900){$('chatStatus').textContent='Please wait a moment before sending another message.';return}lastChatSentAt=now;const name=($('accountName').value.trim()||'Player').slice(0,20);sendChat({name,text,at:now});appendChatMessage(name,text);$('chatInput').value='';$('chatStatus').textContent='Message sent.'});
 
+function readOwnedRoomCodes(){
+ try{const data=JSON.parse(localStorage.getItem('downballOwnedRooms')||'{}'),now=Date.now();for(const [code,stamp] of Object.entries(data))if(now-stamp>10*60*1000)delete data[code];localStorage.setItem('downballOwnedRooms',JSON.stringify(data));return data}catch{return {}}
+}
+function markOwnedRoom(code){const data=readOwnedRoomCodes();data[code]=Date.now();localStorage.setItem('downballOwnedRooms',JSON.stringify(data))}
+function unmarkOwnedRoom(code){const data=readOwnedRoomCodes();delete data[code];localStorage.setItem('downballOwnedRooms',JSON.stringify(data))}
+function isOwnedRoom(code){return Object.prototype.hasOwnProperty.call(readOwnedRoomCodes(),String(code||'').toUpperCase())}
 async function connectRoom(create){
  let code=$('roomCode').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,24);
  const selectedVisibility=$('roomVisibility').value;
  if(create&&!code){code='DB'+Math.random().toString(36).slice(2,8).toUpperCase();$('roomCode').value=code}
  if(!code){setNetworkStatus('Enter a room code or create a room to generate one.');return}
+ if(!create&&(isOwnedRoom(code)||(onlineHost&&roomCodeActive===code))){setNetworkStatus('You cannot join your own room. Share the code with another player, or create a different room.');return}
  leaveCurrentRoom();$('chatLog').replaceChildren();const chatIntro=document.createElement('div');chatIntro.className='small';chatIntro.textContent='Connecting to room…';$('chatLog').append(chatIntro);$('chatStatus').textContent='';roomVisibility=selectedVisibility;stop();running=false;onlineHost=create;onlineConnected=false;mode=$('mode').value;selfId='';roomCodeActive=code;
  try{
   const lib=await import('https://esm.sh/trystero@0.26.0');
@@ -420,6 +427,7 @@ async function connectRoom(create){
   presenceAction.onMessage=(data,{peerId}={})=>{
    if(!data||!peerId)return;
    if(data.type==='hello'&&onlineHost){
+    if(data.roomCode!==roomCodeActive)return;
     if(!peerOrder.includes(peerId))peerOrder.push(peerId);
     presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive,fireballEnabled,speedIncreaseEnabled,settingsLocked},{target:peerId});
     assignOnlineSlots();updateLobby();broadcastState(true);updatePublicListing();return;
@@ -463,17 +471,18 @@ async function connectRoom(create){
    if(!onlineHost&&peerId===hostPeerId){leaveCurrentRoom();running=false;stop();setNetworkStatus('The host left the room. Join a new room to play.');updateLobby();return}
    if(onlineHost){assignOnlineSlots();broadcastState(true)}updateLobby();setNetworkStatus('A player left the room.');
   };
-  if(create){activeRoomVisibility=roomVisibility;onlineConnected=true;hostSeen=true;createPlayers();assignOnlineSlots();setNetworkStatus((roomVisibility==='public'?'Public':'Private')+' room created. Share code: '+code+'. Waiting for players…');lobbyBroadcastTimer=setInterval(()=>{if(room&&onlineHost)broadcastState(true)},500);if(activeRoomVisibility==='public'){updatePublicListing();roomListingTimer=setInterval(updatePublicListing,15000)}}
+  if(create){markOwnedRoom(code);activeRoomVisibility=roomVisibility;onlineConnected=true;hostSeen=true;createPlayers();assignOnlineSlots();setNetworkStatus((roomVisibility==='public'?'Public':'Private')+' room created. Share code: '+code+'. Waiting for players…');lobbyBroadcastTimer=setInterval(()=>{if(room&&onlineHost)broadcastState(true)},500);if(activeRoomVisibility==='public'){updatePublicListing();roomListingTimer=setInterval(updatePublicListing,15000)}}
   else{
    setNetworkStatus('Looking for the host for room '+code+'…');
-   // A room ID alone does not prove a room exists. Require a live host handshake.
-   joinTimeout=setTimeout(()=>{if(room&&!hostSeen){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Room not found: no host responded. Check the code and ask the host to create the room first.');updateLobby()}},10000);
+   // Repeat the handshake briefly in case presence events arrive before the peer handler is ready.
+   const helloTimer=setInterval(()=>{if(!room||hostSeen){clearInterval(helloTimer);return}if(sendPresence)sendPresence({type:'hello',protocol:3,roomCode:roomCodeActive})},900);
+   joinTimeout=setTimeout(()=>{clearInterval(helloTimer);if(room&&!hostSeen){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Could not find a host for '+code+'. Check the code, make sure the host is still in the room, then try again.');updateLobby()}},16000);
   }
   updateLobby();$('onlineStart').disabled=!onlineHost;updateSettingsUI();
  }catch(err){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Could not connect: '+(err?.message||err));updateLobby()}
 }
 $('createRoom').onclick=()=>connectRoom(true);$('joinRoom').onclick=()=>connectRoom(false);$('refreshRooms').onclick=loadPublicRooms;
-async function loadPublicRooms(){const box=$('roomList');if(!box)return;try{const client=await getSupabase();if(!client){box.textContent='Configure Supabase in index.html to use the public room finder.';return}const {data,error}=await client.from('public_rooms').select('room_code,mode,host_name,players_count,created_at').order('updated_at',{ascending:false}).limit(30);if(error)throw error;const fresh=(data||[]).filter(r=>Date.now()-new Date(r.updated_at||r.created_at).getTime()<1000*60*10);box.replaceChildren();if(!fresh.length){box.textContent='No public rooms listed right now. Create one and choose Public.';return}for(const r of fresh){const item=document.createElement('div');item.className='roomItem';const label=document.createElement('span');label.textContent=`${r.room_code} · ${(r.mode||'online1').toUpperCase()} · ${r.players_count||1} player(s) · ${r.host_name||'Host'}`;const btn=document.createElement('button');btn.textContent='Join';btn.onclick=()=>{$('mode').value=r.mode||'online1';$('mode').onchange();$('roomCode').value=r.room_code;$('roomVisibility').value='public';connectRoom(false)};item.append(label,btn);box.append(item)}}catch(err){box.textContent='Room finder unavailable: '+(err?.message||err)+'. Check the public_rooms SQL in README.txt.'}}
+async function loadPublicRooms(){const box=$('roomList');if(!box)return;try{const client=await getSupabase();if(!client){box.textContent='Configure Supabase in index.html to use the public room finder.';return}const {data,error}=await client.from('public_rooms').select('room_code,mode,host_name,players_count,created_at').order('updated_at',{ascending:false}).limit(30);if(error)throw error;const owned=readOwnedRoomCodes();const fresh=(data||[]).filter(r=>Date.now()-new Date(r.updated_at||r.created_at).getTime()<1000*60*10&&!Object.prototype.hasOwnProperty.call(owned,String(r.room_code||'').toUpperCase()));box.replaceChildren();if(!fresh.length){box.textContent='No public rooms listed right now. Create one and choose Public.';return}for(const r of fresh){const item=document.createElement('div');item.className='roomItem';const label=document.createElement('span');label.textContent=`${r.room_code} · ${(r.mode||'online1').toUpperCase()} · ${r.players_count||1} player(s) · ${r.host_name||'Host'}`;const btn=document.createElement('button');btn.textContent='Join';btn.onclick=()=>{$('mode').value=r.mode||'online1';$('mode').onchange();$('roomCode').value=r.room_code;$('roomVisibility').value='public';connectRoom(false)};item.append(label,btn);box.append(item)}}catch(err){box.textContent='Room finder unavailable: '+(err?.message||err)+'. Check the public_rooms SQL in README.txt.'}}
 async function updatePublicListing(){if(!onlineHost||activeRoomVisibility!=='public'||!roomCodeActive)return;try{const client=await getSupabase();if(!client)return;const row={room_code:roomCodeActive,mode,host_name:($('accountName').value.trim()||'Guest').slice(0,20),players_count:Math.min(modePlayers(),peerOrder.length+1),updated_at:new Date().toISOString()};const {error}=await client.from('public_rooms').upsert(row,{onConflict:'room_code'});if(error)throw error;loadPublicRooms()}catch(err){setNetworkStatus('Room works, but public listing failed: '+(err?.message||err))}}
 async function removePublicListing(){if(!onlineHost||!roomCodeActive||activeRoomVisibility!=='public')return;const oldCode=roomCodeActive;try{const client=await getSupabase();if(client)await client.from('public_rooms').delete().eq('room_code',oldCode)}catch{}}
 $('leaveRoom').onclick=()=>{leaveCurrentRoom();onlineHost=false;running=false;stop();updateLobby();setNetworkStatus('Left the room.')};
