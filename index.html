@@ -9,12 +9,17 @@
 h1,h2,p{margin:8px 0}h1{font-size:clamp(22px,4vw,34px)}canvas{display:block;width:min(900px,98vw);height:auto;border:4px solid #203b53;border-radius:14px;background:#eff9ff;box-shadow:0 8px 24px #173b5522}
 #hud{width:min(900px,98vw);display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;font-weight:700}
 .screen{position:fixed;inset:0;background:#0d2238ed;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;overflow:auto;z-index:5}.hidden{display:none!important}.panel{width:min(640px,98vw);padding:22px;border:1px solid #ffffff40;border-radius:18px;background:#ffffff12;box-shadow:0 16px 60px #0003}
-button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:4px}button{background:#ffca28;color:#152b3e;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text]{width:100%}input[type=range]{width:100%}.small{font-size:13px;line-height:1.5;opacity:.9}.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.status{color:#ffe082;min-height:20px}.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:12px 0}.card{border:1px solid #ffffff38;border-radius:12px;padding:12px;background:#ffffff0d}.card strong{display:block;font-size:17px}.coins{color:#ffdf58;font-weight:900}.note{color:#cfe9ff}
+button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:4px}button{background:#ffca28;color:#152b3e;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select,input[type=text]{width:100%}input[type=range]{width:100%}.small{font-size:13px;line-height:1.5;opacity:.9}.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.status{color:#ffe082;min-height:20px}.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:12px 0}.card{border:1px solid #ffffff38;border-radius:12px;padding:12px;background:#ffffff0d}.card strong{display:block;font-size:17px}.coins{color:#ffdf58;font-weight:900}.note{color:#cfe9ff}#matchTools{width:min(900px,98vw);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}#matchTools button,#matchTools label{background:#173b55;color:white;border:1px solid #9fc4dc;border-radius:9px;padding:9px 12px;font-weight:700}#roomList{display:grid;gap:6px;max-height:180px;overflow:auto;text-align:left}.roomItem{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#ffffff12;border:1px solid #ffffff35;border-radius:9px;padding:8px}.roomItem button{margin:0}.toggleline{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0}.toggleline input{width:auto}
 </style>
 </head>
 <body>
 <div id="hud"><span id="hudMode">DOWNBALL SIMULATOR</span><span id="hudScore">Ready</span><span id="hudSpeed">Coins: 0</span></div>
 <canvas id="game" width="900" height="620" aria-label="Downball game court"></canvas>
+<div id="matchTools">
+ <button id="fireballToggle" type="button">🔥 Fireball: ON</button>
+ <button id="speedToggle" type="button">⚡ Speed increase: ON (max 2×)</button>
+ <span id="abilityStatus" class="small">Hold F to charge Fireball, release to shoot.</span>
+</div>
 
 <div id="start" class="screen"><div class="panel">
 <h1>🏐 DOWNBALL SIMULATOR</h1>
@@ -38,7 +43,7 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
 </select>
 <div id="botOptions"><label for="difficulty">Bot difficulty</label><select id="difficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Impossible</option></select></div>
 <label>Rounds: <b id="roundNum">3</b></label><input id="rounds" type="range" min="1" max="10" value="3">
-<div class="small" id="controls">Controls: ←/→ move, Shift sprint.</div>
+<div class="card" style="text-align:left;margin:10px 0"><strong>🎮 Controls</strong><div class="small" id="controls">Move: ← / → · Sprint: Shift · Fireball: hold F to charge, release to shoot.</div><div class="small">Online side courts: use ↑ / ↓ to move. Local 1v1 player 2: A / D · Space to sprint. Esc pauses solo/local matches.</div></div>
 <div id="upgrades">
 <div class="cardgrid">
 <div class="card"><strong>🪙 Coins: <span id="coinCount">0</span></strong><span class="small">Earn coins when a bot or online match ends, win or lose.</span></div>
@@ -49,8 +54,10 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
 </div>
 <div id="onlinePanel" class="hidden">
 <div class="card"><strong>Online room</strong><p class="small">Create a room and share its code, or enter a friend's code. Everyone needs internet access.</p>
-<label for="roomCode">Room code</label><input id="roomCode" type="text" maxlength="24" placeholder="e.g. BLUEBIRD42" autocomplete="off">
-<div class="row"><button id="createRoom">Create room</button><button id="joinRoom">Join room</button><button id="leaveRoom">Leave room</button></div>
+<label for="roomVisibility">Room visibility</label><select id="roomVisibility"><option value="public">Public — appears in Room Finder</option><option value="private">Private — code only</option></select>
+<label for="roomCode">Room code (leave blank to generate one when creating)</label><input id="roomCode" type="text" maxlength="24" placeholder="e.g. BLUEBIRD42" autocomplete="off">
+<div class="row"><button id="createRoom">Create room</button><button id="joinRoom">Join by code</button><button id="leaveRoom">Leave room</button></div>
+<div class="card"><strong>🌐 Public Room Finder</strong><p class="small">Public rooms appear here when the database setup in README.txt is complete. Private rooms never appear in this list.</p><div class="row"><button id="refreshRooms">Refresh rooms</button></div><div id="roomList" class="small">Loading public rooms…</div></div>
 <p id="netStatus" class="status">Not connected</p><p id="lobbyInfo" class="small"></p>
 <button id="onlineStart" disabled>Host: start match</button>
 </div>
@@ -70,10 +77,11 @@ const EDGE_NAMES=['TOP','BOTTOM','LEFT','RIGHT'];
 const DEFAULT_PROFILE={coins:0,sprint:0,movement:0};
 let profile=loadProfile(), mode='bot', running=false,paused=false,raf=0,keys={},round=1,total=3,scores=[0,0,0,0],teamScores=[0,0],roundStart=0,graceUntil=0,speedMult=1,lastFrame=0;
 let players=[],ball={x:W/2,y:H/2,r:11,vx:3.3,vy:6.4},roundWinner=null,matchRewarded=false,matchOver=false;
-let room=null,sendInput=null,sendState=null,sendProfile=null,sendStart=null,sendPresence=null,onlineHost=false,onlineConnected=false,peerOrder=[],peerSlots={},selfId='',onlineInputs={},lastBroadcast=0,assignedSlot=0,onlineStarted=false,profileByPeer={},hostPeerId='',hostSeen=false,joinTimeout=null,lobbyBroadcastTimer=null,roomCodeActive='';
+let room=null,sendInput=null,sendState=null,sendProfile=null,sendStart=null,sendPresence=null,onlineHost=false,onlineConnected=false,peerOrder=[],peerSlots={},selfId='',onlineInputs={},lastBroadcast=0,assignedSlot=0,onlineStarted=false,profileByPeer={},hostPeerId='',hostSeen=false,joinTimeout=null,lobbyBroadcastTimer=null,roomCodeActive='',roomVisibility='public',activeRoomVisibility='private',roomListingTimer=null;
 const SUPABASE_URL='https://pyfabzapzjtzayosvdzb.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_V5NEsQTyMwabVGh3vF8BpQ_mpmQ53tD';
 let supabase=null,authUser=null,accountProfileReady=false,accountSyncTimer=null;
+let fireballEnabled=true,fireballChargeStart=0,fireballUntil=0,speedIncreaseEnabled=true,lastFireballUi=0;
 const appConfig={appId:'downball-simulator-online-2026'};
 const screens=['start','pause','roundScreen','over'];
 function loadProfile(){try{return {...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem('downballProfile')||'{}')}}catch{return {...DEFAULT_PROFILE}}}
@@ -87,7 +95,7 @@ function accountStatus(msg){$('accountStatus').textContent=msg}
 async function syncAccountProfile(){
  if(!authUser||!accountProfileReady)return;
  try{const client=await getSupabase();if(!client)return;const row={user_id:authUser.id,username:($('accountName').value.trim()||authUser.user_metadata?.username||authUser.email?.split('@')[0]||'Player').slice(0,20),coins:Math.max(0,Math.floor(profile.coins)),sprint:Math.max(0,Math.min(5,Math.floor(profile.sprint))),movement:Math.max(0,Math.min(5,Math.floor(profile.movement))),updated_at:new Date().toISOString()};const {error}=await client.from('profiles').upsert(row,{onConflict:'user_id'});if(error)throw error;accountStatus('Signed in as '+(row.username||authUser.email)+' · profile synced')}
- catch(err){accountStatus('Signed in, but cloud save failed. Check the profiles table setup in README.txt. '+(err?.message||''))}
+ catch(err){accountStatus('Signed in, but cloud save failed: '+(err?.message||'Check public.profiles exists, grants/RLS are set, then reload the Supabase schema cache.'))}
 }
 async function applyAccountUser(user){
  authUser=user||null;accountProfileReady=false;$('accountCreate').classList.toggle('hidden',!!user);$('accountLogin').classList.toggle('hidden',!!user);$('accountLogout').classList.toggle('hidden',!user);
@@ -97,7 +105,7 @@ async function applyAccountUser(user){
   if(data){profile={...DEFAULT_PROFILE,coins:+data.coins||0,sprint:Math.max(0,Math.min(5,+data.sprint||0)),movement:Math.max(0,Math.min(5,+data.movement||0))};$('accountName').value=data.username||$('accountName').value}
   else profile={...DEFAULT_PROFILE};
   accountProfileReady=true;saveProfile();await syncAccountProfile();accountStatus('Signed in as '+$('accountName').value+'. Cloud profile ready.');
- }catch(err){accountStatus('Signed in, but cloud profile is not ready. Check the database setup in README.txt. '+(err?.message||''))}
+ }catch(err){accountStatus('Signed in, but cloud profile is not ready: '+(err?.message||'Check public.profiles exists, grants/RLS are set, then reload the Supabase schema cache.'))}
 }
 async function accountCreate(){
  const email=$('accountEmail').value.trim(),password=$('accountPassword').value,username=$('accountName').value.trim().slice(0,20)||'Player';if(!email||password.length<8){accountStatus('Enter an email and a password of at least 8 characters.');return}
@@ -141,7 +149,7 @@ function createPlayers(){
 function resetBall(){
  ball={x:W/2,y:H/2,r:11,vx:(Math.random()<.5?-1:1)*3.6,vy:(Math.random()<.5?-1:1)*6.2};
  players.forEach(p=>{p.energy=100;positionPlayer(p)});
- roundStart=performance.now();graceUntil=roundStart+3000;speedMult=1;roundWinner=null;lastFrame=0;
+ roundStart=performance.now();graceUntil=roundStart+3000;speedMult=1;fireballUntil=0;fireballChargeStart=0;roundWinner=null;lastFrame=0;
 }
 function positionPlayer(p){if(p.edge===0){p.w=132;p.h=16;p.x=W/2-p.w/2;p.y=28}else if(p.edge===1){p.w=132;p.h=16;p.x=W/2-p.w/2;p.y=H-44}else if(p.edge===2){p.w=16;p.h=132;p.x=28;p.y=H/2-p.h/2}else{p.w=16;p.h=132;p.x=W-44;p.y=H/2-p.h/2}}
 function stop(){if(raf)cancelAnimationFrame(raf);raf=0}
@@ -230,7 +238,7 @@ function collidePaddle(p,oldX,oldY){
  return false;
 }
 function physicsStep(dt){
- const elapsed=performance.now()-roundStart;speedMult=Math.min(1.5,1+elapsed/90000);
+ const elapsed=performance.now()-roundStart;speedMult=speedIncreaseEnabled?Math.min(2,1+elapsed/90000):1;
  ball.vy+=.018*dt;
  const dx=ball.vx*speedMult*dt,dy=ball.vy*speedMult*dt;
  // Continuous-ish collision via tiny substeps: each displacement is capped at 1.5 px.
@@ -244,7 +252,7 @@ function physicsStep(dt){
   }
   let hit=false;
   for(const p of players){if(collidePaddle(p,ox,oy)){hit=true;break}}
-  if(hit){const mag=Math.hypot(ball.vx,ball.vy);if(mag>12){ball.vx*=12/mag;ball.vy*=12/mag}}
+  if(hit){const mag=Math.hypot(ball.vx,ball.vy),cap=performance.now()<fireballUntil?24:12;if(mag>cap){ball.vx*=cap/mag;ball.vy*=cap/mag}}
   if(mode==='online2'||mode==='online4'){
    // The player whose edge the ball exits has missed; award the round to an opponent.
    if(ball.y-ball.r<0){endRound(mode==='online2'?1:1);return}
@@ -261,7 +269,7 @@ function update(dt){
  if(!running||paused)return;
  if(isOnline()){
   const me=players[assignedSlot],inp=localInputFor(me);
-  if(inp&&sendInput)sendInput(inp);
+  if(inp&&sendInput)sendInput(inp)
   if(!onlineHost)return;
   players.forEach(p=>{
    const inp=p.id===0?localInputFor(p):onlineInputs[p.owner];
@@ -269,7 +277,7 @@ function update(dt){
    if(inp)movePlayer(p,inp,up);else if(p.id===0)movePlayer(p,{},up);
   });
  }else{
-  movePlayer(players[0],localInputFor(players[0]),profile);
+  const local=localInputFor(players[0]);if(local?.fireball){activateFireball();local.fireball=false}movePlayer(players[0],local,profile);
   if(mode==='local1')movePlayer(players[1],localInputFor(players[1]),{sprint:0,movement:0});
   else if(mode==='bot')botMove();
  }
@@ -280,7 +288,8 @@ function update(dt){
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#eaf8df';ctx.fillRect(0,0,W,H);
  ctx.strokeStyle='#b4cfaa';ctx.lineWidth=2;ctx.setLineDash([10,10]);ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();ctx.setLineDash([]);
- ctx.fillStyle='#18344b';ctx.font='bold 18px Arial';ctx.textAlign='left';ctx.fillText(`${mode.toUpperCase().replace('ONLINE','ONLINE ')}`,14,24);ctx.fillText(`BALL SPEED ${speedMult.toFixed(2)}×`,14,48);
+ ctx.fillStyle='#18344b';ctx.font='bold 18px Arial';ctx.textAlign='left';ctx.fillText(`${mode.toUpperCase().replace('ONLINE','ONLINE ')}`,14,24);ctx.fillText(`BALL SPEED ${speedMult.toFixed(2)}×${performance.now()<fireballUntil?'  🔥 FIREBALL!':''}`,14,48);
+ if(fireballEnabled&&fireballChargeStart){const charge=Math.min(1,(performance.now()-fireballChargeStart)/1200);ctx.fillStyle='#18344b';ctx.fillRect(W/2-100,58,200,12);ctx.fillStyle='#ff7b22';ctx.fillRect(W/2-100,58,200*charge,12);ctx.fillStyle='#18344b';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText('FIREBALL CHARGE',W/2,54)}
  if(teamMode()){ctx.fillText(`BLUE TEAM ${teamScores[0]}`,14,H/2-12);ctx.textAlign='right';ctx.fillText(`RED TEAM ${teamScores[1]}`,W-14,H/2+22)}
  else{ctx.textAlign='center';ctx.fillText(scoreText(),W/2, H/2+7)}
  for(const p of players){
@@ -304,15 +313,19 @@ function loop(now=performance.now()){
  const dt=lastFrame?Math.min(34,now-lastFrame):16.667;lastFrame=now;update(dt);draw();raf=requestAnimationFrame(loop)
 }
 function togglePause(){if(!running||isOnline())return;paused=!paused;show(paused?'pause':null);if(!paused)loop()}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();if(!e.repeat)togglePause();return}keys[e.key]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
-document.addEventListener('keyup',e=>keys[e.key]=false);
+document.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='f'&&!e.repeat&&fireballEnabled){fireballChargeStart=performance.now();$('abilityStatus').textContent='Charging Fireball… release F to shoot!'}if(e.key==='Escape'){e.preventDefault();if(!e.repeat)togglePause();return}keys[e.key]=true;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault()});
+document.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key.toLowerCase()==='f'&&fireballChargeStart){const charged=performance.now()-fireballChargeStart;fireballChargeStart=0;if(fireballEnabled&&charged>=180){if(isOnline()&&!onlineHost){if(sendInput)sendInput({left:held('ArrowLeft'),right:held('ArrowRight'),up:held('ArrowUp'),down:held('ArrowDown'),sprint:held('Shift'),fireball:true})}else activateFireball()}$('abilityStatus').textContent=fireballEnabled?'Fireball ready · hold F and release to shoot.':'Fireball disabled.'}});
+function activateFireball(){if(!fireballEnabled||!running||performance.now()<graceUntil)return;const mag=Math.hypot(ball.vx,ball.vy)||1;ball.vx=ball.vx/mag* Math.min(24,mag*3);ball.vy=ball.vy/mag*Math.min(24,mag*3);fireballUntil=performance.now()+1400;$('abilityStatus').textContent='🔥 FIREBALL SHOT!'}
 $('mode').onchange=()=>{
  mode=$('mode').value;$('botOptions').classList.toggle('hidden',mode!=='bot');$('onlinePanel').classList.toggle('hidden',!isOnline());$('upgrades').classList.toggle('hidden',mode==='local1');
  $('startBtn').classList.toggle('hidden',isOnline());
- $('controls').textContent=mode==='local1'?'P1: ←/→ + Shift. P2: A/D + Space.':mode==='bot'?'←/→ to move, Shift to sprint.':'Online: ←/→ or ↑/↓ depending on your court edge; Shift to sprint.';
+ $('controls').textContent=mode==='local1'?'P1: ←/→ + Shift. P2: A/D + Space. Fireball: hold F, release to shoot.':mode==='bot'?'←/→ to move, Shift to sprint. Fireball: hold F, release to shoot.':'Online: ←/→ or ↑/↓ depending on your court edge; Shift to sprint; hold F then release for Fireball.';
  if(isOnline())$('netStatus').textContent='Create a room or join with a room code.';
 };
 $('rounds').oninput=e=>$('roundNum').textContent=e.target.value;
+function syncMatchButtons(){$('fireballToggle').textContent='🔥 Fireball: '+(fireballEnabled?'ON':'OFF');$('speedToggle').textContent='⚡ Speed increase: '+(speedIncreaseEnabled?'ON (max 2×)':'OFF (1×)')}
+$('fireballToggle').onclick=()=>{if(isOnline()&&!onlineHost){$('abilityStatus').textContent='Only the host can toggle Fireball for this online match.';return}fireballEnabled=!fireballEnabled;if(!fireballEnabled)fireballChargeStart=0;syncMatchButtons();$('abilityStatus').textContent=fireballEnabled?'Fireball enabled · hold F and release to shoot.':'Fireball disabled for this match.';if(isOnline()&&onlineHost)broadcastState(true)};
+$('speedToggle').onclick=()=>{if(isOnline()&&!onlineHost){$('abilityStatus').textContent='Only the host can change match ball-speed settings.';return}speedIncreaseEnabled=!speedIncreaseEnabled;if(!speedIncreaseEnabled)speedMult=1;syncMatchButtons();if(isOnline()&&onlineHost)broadcastState(true)};
 $('startBtn').onclick=startGame;$('next').onclick=nextRound;$('again').onclick=()=>{if(isOnline()){if(onlineHost)startGame();else $('netStatus').textContent='Ask the host to start the next match.'}else startGame()};
 $('resume').onclick=()=>{paused=false;show(null);loop()};$('restart').onclick=startGame;
 $('home').onclick=$('home2').onclick=()=>{running=false;paused=false;stop();show('start')};
@@ -320,7 +333,7 @@ $('onlineStart').onclick=startGame;
 
 function broadcastState(force){
  if(!onlineHost||!sendState||!room)return;
- sendState({type:'state',protocol:2,mode,roomCode:roomCodeActive,round,total,scores,teamScores,ball,players:players.map(p=>({...p})),roster:Math.min(modePlayers(),peerOrder.length+1),running,paused,speedMult,grace:Math.max(0,graceUntil-performance.now()),hostTime:performance.now(),force:!!force,roundWinner,matchOver});
+ sendState({type:'state',protocol:2,mode,roomCode:roomCodeActive,round,total,scores,teamScores,ball,players:players.map(p=>({...p})),roster:Math.min(modePlayers(),peerOrder.length+1),running,paused,speedMult,speedIncreaseEnabled,fireballEnabled,fireballRemaining:Math.max(0,fireballUntil-performance.now()),grace:Math.max(0,graceUntil-performance.now()),hostTime:performance.now(),force:!!force,roundWinner,matchOver});
 }
 function setNetworkStatus(text){$('netStatus').textContent=text}
 function updateLobby(rosterFromHost=null){
@@ -329,11 +342,13 @@ function updateLobby(rosterFromHost=null){
  $('onlineStart').disabled=!onlineHost||n<needed;
 }
 function clearRoomTimers(){if(joinTimeout){clearTimeout(joinTimeout);joinTimeout=null}if(lobbyBroadcastTimer){clearInterval(lobbyBroadcastTimer);lobbyBroadcastTimer=null}}
-function leaveCurrentRoom(){clearRoomTimers();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={}}
+function leaveCurrentRoom(){clearRoomTimers();if(roomListingTimer){clearInterval(roomListingTimer);roomListingTimer=null}removePublicListing();if(room){try{room.leave()}catch{}}room=null;sendInput=sendState=sendProfile=sendStart=sendPresence=null;onlineConnected=false;onlineStarted=false;hostPeerId='';hostSeen=false;peerOrder=[];peerSlots={};onlineInputs={};profileByPeer={}}
 async function connectRoom(create){
- const code=$('roomCode').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,24);
- if(!code){setNetworkStatus('Enter a room code first.');return}
- leaveCurrentRoom();stop();running=false;onlineHost=create;onlineConnected=false;mode=$('mode').value;selfId='';roomCodeActive=code;
+ let code=$('roomCode').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,24);
+ const selectedVisibility=$('roomVisibility').value;
+ if(create&&!code){code='DB'+Math.random().toString(36).slice(2,8).toUpperCase();$('roomCode').value=code}
+ if(!code){setNetworkStatus('Enter a room code or create a room to generate one.');return}
+ leaveCurrentRoom();roomVisibility=selectedVisibility;stop();running=false;onlineHost=create;onlineConnected=false;mode=$('mode').value;selfId='';roomCodeActive=code;
  try{
   const lib=await import('https://esm.sh/trystero@0.26.0');
   selfId=lib.selfId;
@@ -344,14 +359,14 @@ async function connectRoom(create){
   const startAction=room.makeAction('downball-start-v3');
   const presenceAction=room.makeAction('downball-presence-v3');
   sendInput=data=>inputAction.send(data);sendState=data=>stateAction.send(data);sendProfile=data=>profileAction.send(data);sendStart=data=>startAction.send(data);sendPresence=(data,options)=>presenceAction.send(data,options);
-  inputAction.onMessage=(data,{peerId}={})=>{if(onlineHost&&peerOrder.includes(peerId)&&data&&typeof data==='object')onlineInputs[peerId]=data};
+  inputAction.onMessage=(data,{peerId}={})=>{if(onlineHost&&peerOrder.includes(peerId)&&data&&typeof data==='object'){if(data.fireball)activateFireball();onlineInputs[peerId]={...data,fireball:false}}};
   profileAction.onMessage=(data,{peerId}={})=>{if(peerId&&peerOrder.includes(peerId)&&data&&typeof data==='object'){profileByPeer[peerId]={sprint:Math.max(0,Math.min(5,+data.sprint||0)),movement:Math.max(0,Math.min(5,+data.movement||0))};if(onlineHost){assignOnlineSlots();broadcastState(true)}}};
   presenceAction.onMessage=(data,{peerId}={})=>{
    if(!data||!peerId)return;
    if(data.type==='hello'&&onlineHost){
     if(!peerOrder.includes(peerId))peerOrder.push(peerId);
     presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});
-    assignOnlineSlots();updateLobby();broadcastState(true);return;
+    assignOnlineSlots();updateLobby();broadcastState(true);updatePublicListing();return;
    }
    if(data.type==='host'&&!onlineHost){
     if(data.protocol!==3||data.roomCode!==roomCodeActive)return;
@@ -374,7 +389,7 @@ async function connectRoom(create){
   stateAction.onMessage=(data,{peerId}={})=>{
    if(onlineHost||peerId!==hostPeerId||!data||data.type!=='state'||data.protocol!==2)return;
    onlineConnected=true;mode=data.mode;round=data.round;total=data.total;scores=data.scores||scores;teamScores=data.teamScores||teamScores;
-   ball=data.ball||ball;speedMult=data.speedMult||1;
+   ball=data.ball||ball;speedMult=data.speedMult||1;speedIncreaseEnabled=data.speedIncreaseEnabled!==false;fireballEnabled=data.fireballEnabled!==false;fireballUntil=performance.now()+(data.fireballRemaining||0);syncMatchButtons();
    if(data.players){players=data.players.map((p,i)=>({...p,edge:p.edge??i,w:p.w??(i<2?132:16),h:p.h??(i<2?16:132),upgrade:profileByPeer[p.owner]||p.upgrade||{sprint:0,movement:0}}));assignedSlot=Math.max(0,players.findIndex(p=>p.owner===selfId));if(players[assignedSlot])players[assignedSlot].name='YOU'}
    updateLobby(data.roster||1);running=!!data.running;paused=!!data.paused;graceUntil=performance.now()+(data.grace||0);roundWinner=data.roundWinner;matchOver=!!data.matchOver;
    if(running){if(!$('start').classList.contains('hidden'))show(null);if(!raf)loop()}
@@ -383,7 +398,7 @@ async function connectRoom(create){
   };
   room.onPeerJoin=peerId=>{
    if(!peerOrder.includes(peerId))peerOrder.push(peerId);
-   if(onlineHost){presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});assignOnlineSlots();updateLobby();broadcastState(true)}
+   if(onlineHost){presenceAction.send({type:'host',protocol:3,mode,needed:modePlayers(),roomCode:roomCodeActive},{target:peerId});assignOnlineSlots();updateLobby();broadcastState(true);updatePublicListing()}
    else presenceAction.send({type:'hello',protocol:3,roomCode:roomCodeActive},{target:peerId});
   };
   room.onPeerLeave=peerId=>{
@@ -391,7 +406,7 @@ async function connectRoom(create){
    if(!onlineHost&&peerId===hostPeerId){leaveCurrentRoom();running=false;stop();setNetworkStatus('The host left the room. Join a new room to play.');updateLobby();return}
    if(onlineHost){assignOnlineSlots();broadcastState(true)}updateLobby();setNetworkStatus('A player left the room.');
   };
-  if(create){onlineConnected=true;hostSeen=true;createPlayers();assignOnlineSlots();setNetworkStatus('Room created. Share code: '+code+'. Waiting for players…');lobbyBroadcastTimer=setInterval(()=>{if(room&&onlineHost)broadcastState(true)},500);}
+  if(create){activeRoomVisibility=roomVisibility;onlineConnected=true;hostSeen=true;createPlayers();assignOnlineSlots();setNetworkStatus((roomVisibility==='public'?'Public':'Private')+' room created. Share code: '+code+'. Waiting for players…');lobbyBroadcastTimer=setInterval(()=>{if(room&&onlineHost)broadcastState(true)},500);if(activeRoomVisibility==='public'){updatePublicListing();roomListingTimer=setInterval(updatePublicListing,15000)}}
   else{
    setNetworkStatus('Looking for the host for room '+code+'…');
    // A room ID alone does not prove a room exists. Require a live host handshake.
@@ -400,7 +415,10 @@ async function connectRoom(create){
   updateLobby();$('onlineStart').disabled=!onlineHost;
  }catch(err){leaveCurrentRoom();onlineHost=false;setNetworkStatus('Could not connect: '+(err?.message||err));updateLobby()}
 }
-$('createRoom').onclick=()=>connectRoom(true);$('joinRoom').onclick=()=>connectRoom(false);
+$('createRoom').onclick=()=>connectRoom(true);$('joinRoom').onclick=()=>connectRoom(false);$('refreshRooms').onclick=loadPublicRooms;
+async function loadPublicRooms(){const box=$('roomList');if(!box)return;try{const client=await getSupabase();if(!client){box.textContent='Configure Supabase in index.html to use the public room finder.';return}const {data,error}=await client.from('public_rooms').select('room_code,mode,host_name,players_count,created_at').order('updated_at',{ascending:false}).limit(30);if(error)throw error;const fresh=(data||[]).filter(r=>Date.now()-new Date(r.updated_at||r.created_at).getTime()<1000*60*10);box.replaceChildren();if(!fresh.length){box.textContent='No public rooms listed right now. Create one and choose Public.';return}for(const r of fresh){const item=document.createElement('div');item.className='roomItem';const label=document.createElement('span');label.textContent=`${r.room_code} · ${(r.mode||'online1').toUpperCase()} · ${r.players_count||1} player(s) · ${r.host_name||'Host'}`;const btn=document.createElement('button');btn.textContent='Join';btn.onclick=()=>{$('mode').value=r.mode||'online1';$('mode').onchange();$('roomCode').value=r.room_code;$('roomVisibility').value='public';connectRoom(false)};item.append(label,btn);box.append(item)}}catch(err){box.textContent='Room finder unavailable: '+(err?.message||err)+'. Check the public_rooms SQL in README.txt.'}}
+async function updatePublicListing(){if(!onlineHost||activeRoomVisibility!=='public'||!roomCodeActive)return;try{const client=await getSupabase();if(!client)return;const row={room_code:roomCodeActive,mode,host_name:($('accountName').value.trim()||'Guest').slice(0,20),players_count:Math.min(modePlayers(),peerOrder.length+1),updated_at:new Date().toISOString()};const {error}=await client.from('public_rooms').upsert(row,{onConflict:'room_code'});if(error)throw error;loadPublicRooms()}catch(err){setNetworkStatus('Room works, but public listing failed: '+(err?.message||err))}}
+async function removePublicListing(){if(!onlineHost||!roomCodeActive||activeRoomVisibility!=='public')return;const oldCode=roomCodeActive;try{const client=await getSupabase();if(client)await client.from('public_rooms').delete().eq('room_code',oldCode)}catch{}}
 $('leaveRoom').onclick=()=>{leaveCurrentRoom();onlineHost=false;running=false;stop();updateLobby();setNetworkStatus('Left the room.')};
 
 function startOnlineFromHost(){
@@ -413,6 +431,6 @@ const originalNext=nextRound;
 $('next').onclick=()=>{if(isOnline()&&!onlineHost){setNetworkStatus('Only the host can advance the round.');return}originalNext()};
 const originalFinish=finishMatch;
 function syncProfileToPeers(){if(sendProfile)sendProfile({sprint:profile.sprint,movement:profile.movement})}
-refreshShop();createPlayers();resetBall();draw();initAccounts();
+refreshShop();createPlayers();resetBall();draw();syncMatchButtons();initAccounts();setTimeout(loadPublicRooms,1000);
 </script>
 </body></html>
