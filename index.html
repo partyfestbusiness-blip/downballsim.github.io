@@ -42,7 +42,7 @@ button,select,input{font:inherit;border:0;border-radius:9px;padding:10px;margin:
 <option value="online2">Online 2v2</option>
 <option value="online4">Online 1v1v1v1</option>
 </select>
-<div id="botOptions"><label for="difficulty">Bot difficulty</label><select id="difficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Impossible</option></select></div>
+<div id="botOptions"><p class="small">Choose “1v1v1v1 — You vs 3 Bots” to play a four-player free-for-all.</p><label for="difficulty">Bot difficulty</label><select id="difficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Impossible</option></select></div>
 <label>Rounds: <b id="roundNum">3</b></label><input id="rounds" type="range" min="1" max="10" value="3">
 <div class="card" style="text-align:left;margin:10px 0"><strong>⚙️ Match settings (main menu only)</strong>
  <div class="toggleline"><label for="menuFireballToggle">🔥 Fireball ability</label><input id="menuFireballToggle" type="checkbox" checked></div>
@@ -167,7 +167,7 @@ function createPlayers(){
   {x:W-44,y:H/2-66,w:16,h:132,edge:3}
  ];
  for(let i=0;i<n;i++){
-  const c=configs[i];players.push({id:i,slot:i,x:c.x,y:c.y,w:c.w,h:c.h,edge:c.edge,color:COLORS[i],energy:100,speed:5.3,owner:i===0?selfId:'',bot:false,upgrade:{sprint:0,movement:0},name:i===0?'PLAYER 1':(isBotMode()?'BOT '+i:`PLAYER ${i+1}`)});
+  const c=configs[i];players.push({id:i,slot:i,x:c.x,y:c.y,w:c.w,h:c.h,edge:c.edge,color:COLORS[i],energy:100,speed:5.3,owner:i===0?selfId:'',bot:isBotMode()&&i>0,upgrade:{sprint:0,movement:0},name:i===0?'YOU':(isBotMode()?'BOT '+i:`PLAYER ${i+1}`)});
  }
 }
 function resetBall(){
@@ -248,7 +248,9 @@ function botMove(p=players[1]){
  if(!p)return;
  const diff=$('difficulty').value;
  const speed=({Easy:2,Medium:3.5,Hard:4.8,Impossible:6.1}[diff]||3.5);
- const wobble=diff==='Easy'?Math.sin(performance.now()/330+p.id)*65:diff==='Medium'?Math.sin(performance.now()/800+p.id)*18:0;
+ // Slightly different movement rhythms stop the three opponents feeling like clones.
+ const phase=p.id*1.71, now=performance.now();
+ const wobble=diff==='Easy'?Math.sin(now/330+phase)*65:diff==='Medium'?Math.sin(now/800+phase)*18:diff==='Hard'?Math.sin(now/1250+phase)*5:0;
  if(p.edge<=1){let target=ball.x-p.w/2+wobble;p.x+=Math.sign(target-p.x)*Math.min(speed,Math.abs(target-p.x));p.x=Math.max(0,Math.min(W-p.w,p.x));}
  else{let target=ball.y-p.h/2+wobble;p.y+=Math.sign(target-p.y)*Math.min(speed,Math.abs(target-p.y));p.y=Math.max(0,Math.min(H-p.h,p.y));}
 }
@@ -392,8 +394,7 @@ function setNetworkStatus(text){$('netStatus').textContent=text}
 function updateLobby(rosterFromHost=null){
  const needed=modePlayers(),n=Math.min(needed,rosterFromHost==null?peerOrder.length+1:rosterFromHost);
  const missing=Math.max(0,needed-n),botFillAllowed=mode==='online2';
- const botNotice=onlineStarted&&onlineBotSlots.length?` ${onlineBotSlots.length} bot(s) fill the remaining slot(s).`:onlineHost&&missing&&botFillAllowed?` Starting now will fill ${missing} empty slot(s) with bot(s).`:'';
- $('lobbyInfo').textContent=`Players connected: ${n}/${needed}. ${onlineHost?'You are the host.':(onlineConnected?'Connected to host.':'Waiting for the host.')}`+botNotice;
+ $('lobbyInfo').textContent=`Players connected: ${n}/${needed}. ${onlineHost?'You are the host.':(onlineConnected?'Connected to host.':'Waiting for the host.')}`+(onlineHost&&missing&&botFillAllowed?` Starting now will fill ${missing} empty slot(s) with bot(s).`:'');
  $('onlineStart').textContent=onlineHost&&missing&&botFillAllowed?`Host: start with ${missing} bot(s)`:'Host: start match';
  $('onlineStart').disabled=!onlineHost||(!botFillAllowed&&missing>0);
 }
